@@ -1,0 +1,61 @@
+---
+globs: manifest.json,devtools.html,devtools.js,service_worker.js
+---
+
+# Chrome Extension Development Rules (Manifest V3)
+
+## Manifest V3 Requirements
+- Always use `"manifest_version": 3` in [manifest.json](mdc:net2sheet/manifest.json)
+- Use `service_worker` instead of background pages
+- Specify `host_permissions` for cross-origin requests
+- Use `chrome.storage` API for persistent settings
+
+## DevTools Extension Patterns
+```javascript
+// DevTools network monitoring pattern
+chrome.devtools.network.onRequestFinished.addListener((req) => {
+  // Access request data via req.request.url, req.response
+});
+
+// DevTools navigation events
+chrome.devtools.network.onNavigated.addListener(() => {
+  // Handle page navigation (optional data reset)
+});
+```
+
+## Permissions Best Practices
+- **storage**: Required for saving GAS URL settings
+- **scripting**: Future-proofing for content script injection
+- **host_permissions**: `<all_urls>` for monitoring any website
+
+## DevTools Panel UI Guidelines
+- Use semantic HTML with proper form controls
+- Implement responsive button layouts with clear actions
+- Provide real-time feedback (collection status, count display)
+- Include data preview for user verification
+
+## Error Handling Standards
+```javascript
+// Network request validation
+try {
+  const u = new URL(url);
+  // Process valid URL
+} catch {
+  return; // Gracefully handle invalid URLs
+}
+
+// API call error handling
+try {
+  const res = await fetch(gasUrl, { /* options */ });
+  const data = await res.json();
+  // Handle success
+} catch (e) {
+  alert(`エラー: ${e}`); // User-friendly error messages in Japanese
+}
+```
+
+## Data Security Considerations
+- Validate all user inputs (GAS URLs, collected data)
+- Consider URL masking for sensitive tokens
+- Implement domain whitelisting for production use
+- Use `credentials: "include"` only when necessary for authentication

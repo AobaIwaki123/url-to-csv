@@ -1,0 +1,103 @@
+---
+globs: *.js
+---
+
+# JavaScript Coding Standards for Net2Sheet
+
+## Modern JavaScript Patterns
+- Use `const` and `let` instead of `var`
+- Prefer arrow functions for callbacks and short functions
+- Use template literals for string interpolation
+- Implement destructuring for object/array access
+
+## Data Structures & State Management
+```javascript
+// Use Sets for efficient lookups
+const IMAGE_EXTS = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".avif", ".bmp", ".ico"]);
+
+// Array of arrays for CSV-compatible data structure
+let rows = []; // [ [name, url], ... ]
+
+// Utility functions with clear naming
+const $ = (id) => document.getElementById(id);
+const updateView = () => { /* update UI state */ };
+```
+
+## Async/Await Patterns
+```javascript
+// Prefer async/await over Promises for readability
+$("send").onclick = async () => {
+  try {
+    const res = await fetch(gasUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rows })
+    });
+    const data = await res.json();
+    // Handle success
+  } catch (e) {
+    // Handle error
+  }
+};
+```
+
+## CSV Generation Standards
+```javascript
+// Proper CSV escaping for special characters
+const csvEscape = (value) => `"${(value ?? "").replace(/"/g,'""')}"`;
+const csvRow = (row) => row.map(csvEscape).join(",");
+const csvContent = rows.map(csvRow).join("\n");
+```
+
+## Chrome Extension API Usage
+```javascript
+// Storage API pattern
+chrome.storage.local.get(["gasUrl"], ({ gasUrl }) => {
+  // Use destructuring for clean API responses
+});
+
+// Event listener patterns with guard clauses
+chrome.devtools.network.onRequestFinished.addListener((req) => {
+  if (!collecting) return; // Early return for inactive state
+  
+  // Process request data
+});
+```
+
+## File Download Pattern
+```javascript
+// Blob-based file download implementation
+const downloadBlob = (content, filename, mimeType = "text/csv") => {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url); // Clean up memory
+};
+```
+
+## URL Processing Best Practices
+```javascript
+// Safe URL parsing with fallbacks
+const extractFilename = (url) => {
+  try {
+    return new URL(url).pathname.split("/").pop() || "";
+  } catch {
+    return url || "";
+  }
+};
+
+// Extension detection for image filtering
+const getFileExtension = (pathname) => {
+  const lastDot = pathname.lastIndexOf(".");
+  return lastDot >= 0 ? pathname.slice(lastDot).toLowerCase() : "";
+};
+```
+
+## User Feedback Patterns
+- Use `alert()` for critical error messages (temporary solution)
+- Update UI elements immediately for responsive feedback
+- Provide clear Japanese messages for user-facing text
+- Show progress indicators (count updates, collection status)

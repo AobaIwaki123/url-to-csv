@@ -1,0 +1,91 @@
+---
+globs: *.html,*.css
+---
+
+# UI Design Rules for DevTools Panel
+
+## CSS Framework & Typography
+```css
+/* Use system font stack for consistent DevTools integration */
+body { 
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  padding: 10px;
+  margin: 0;
+}
+```
+
+## Layout Patterns
+```css
+/* Row-based layout for form sections */
+.row { 
+  margin: 8px 0; 
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Full-width form controls */
+textarea, input[type="text"] { 
+  width: 100%; 
+  box-sizing: border-box;
+}
+```
+
+## Component Design Principles
+1. **Compact Layout**: DevTools panels have limited space - use efficient layouts
+2. **Clear Actions**: Button groups with consistent spacing and visual hierarchy
+3. **Immediate Feedback**: Show collection status and data count in real-time
+4. **Data Preview**: Always provide textarea preview of collected data
+
+## Form Control Standards
+```html
+<!-- Label-input association with inline styling for space efficiency -->
+<label>GAS WebApp URL: <input id="gasUrl" style="width:60%"></label>
+
+<!-- Button groups with consistent spacing -->
+<button id="start">収集開始</button>
+<button id="stop">収集停止</button>
+<button id="exportCsv">CSVダウンロード</button>
+<button id="send">スプレッドシートへ送信</button>
+```
+
+## Color & Visual Design
+- Use minimal colors to match DevTools aesthetic
+- Rely on typography hierarchy rather than color for importance
+- Ensure sufficient contrast for accessibility
+- Use native button and form control styling for consistency
+
+## Responsive Behavior
+```css
+/* Textarea sizing for data preview */
+textarea { 
+  height: 120px; 
+  resize: vertical; 
+  font-family: monospace; /* Better for CSV preview */
+}
+
+/* Button spacing for touch-friendly interaction */
+button { 
+  margin-right: 8px; 
+  padding: 4px 8px;
+  min-height: 24px;
+}
+```
+
+## Japanese UI Text Guidelines
+- Use clear, concise Japanese for user actions
+- Maintain consistency: 収集開始/停止, CSVダウンロード, etc.
+- Provide helpful placeholder text in form controls
+- Error messages should be informative and in Japanese
+
+## Accessibility Considerations
+- Use semantic HTML elements (`<label>`, `<button>`, `<textarea>`)
+- Ensure keyboard navigation works properly
+- Provide clear visual focus indicators
+- Use descriptive text for screen readers
+
+## DevTools Integration
+- Keep visual design minimal to blend with DevTools
+- Use standard spacing and sizing conventions
+- Avoid custom icons unless necessary (stick to text labels)
+- Ensure panel works in both light and dark DevTools themes

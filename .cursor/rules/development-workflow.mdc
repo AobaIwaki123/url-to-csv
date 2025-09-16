@@ -1,0 +1,91 @@
+---
+description: Development workflow and testing guidelines for Net2Sheet extension
+---
+
+# Development Workflow & Testing
+
+## Extension Development Workflow
+1. **Local Development**: Load extension via "パッケージ化されていない拡張機能を読み込む"
+2. **Testing**: Use DevTools on real websites to test network request collection
+3. **Debugging**: Use `console.log` in DevTools panel context for debugging
+4. **Iteration**: Reload extension after code changes
+
+## Testing Strategy
+```javascript
+// Test with various image types and edge cases
+const testUrls = [
+  "https://example.com/image.png",           // Standard PNG
+  "https://example.com/image.jpg?v=123",     // URL with query params
+  "https://example.com/path/file.webp",      // Modern format
+  "https://cdn.example.com/sprite.svg",      // SVG graphics
+  "https://example.com/no-extension",        // Edge case: no extension
+];
+```
+
+## Common Development Issues & Solutions
+
+### Extension Reload
+- **Problem**: Changes not reflected after code modification
+- **Solution**: Always reload extension in chrome://extensions/ after editing files
+- **Debug**: Check console in extension details for load errors
+
+### DevTools Panel Not Appearing
+- **Problem**: "Net2Sheet" tab missing from DevTools
+- **Solution**: Verify `devtools_page` in manifest.json points to correct HTML file
+- **Check**: Ensure DevTools is opened AFTER extension is loaded
+
+### Network Events Not Triggering
+- **Problem**: `onRequestFinished` not firing for image requests
+- **Solution**: Ensure collection is started before navigating/refreshing page
+- **Debug**: Test with explicit image requests (e.g., social media sites)
+
+### GAS Integration Issues
+```javascript
+// Common CORS issues with GAS WebApp
+// Solution: Ensure GAS deployment allows anonymous access
+// Alternative: Use credentials: "include" with authenticated GAS
+
+// Test GAS endpoint independently
+const testGAS = async (url) => {
+  const testData = { rows: [["test.png", "https://test.com/test.png"]] };
+  try {
+    const res = await fetch(url, {
+      method: "POST", 
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(testData)
+    });
+    console.log("GAS Test Result:", await res.json());
+  } catch (e) {
+    console.error("GAS Test Failed:", e);
+  }
+};
+```
+
+## File Change Monitoring
+- **Watch**: `devtools.js` - Main logic changes require extension reload
+- **Watch**: `manifest.json` - Permission changes require full reinstall
+- **Monitor**: Browser console for JavaScript errors in extension context
+
+## Performance Considerations
+- **Memory**: Clear `rows` array periodically to prevent memory leaks
+- **Network**: Batch GAS requests instead of sending individual items
+- **UI**: Use `requestAnimationFrame` for frequent UI updates if needed
+
+## Security Testing
+- Test with sensitive URLs containing tokens
+- Verify data sanitization in CSV export
+- Check GAS endpoint access controls
+- Validate input handling for malformed URLs
+
+## Cross-Browser Compatibility Notes
+- **Chrome**: Primary target (DevTools API availability)
+- **Edge**: Should work with Chromium base
+- **Firefox**: Different extension API (WebExtensions) - not currently supported
+- **Safari**: Different architecture - not supported
+
+## Production Deployment Checklist
+1. Remove console.log statements from production code
+2. Verify GAS WebApp deployment settings
+3. Test with various website types (SPA, traditional, media-heavy)
+4. Validate CSV output format with different spreadsheet applications
+5. Document user setup process clearly (GAS deployment + extension installation)

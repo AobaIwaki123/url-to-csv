@@ -1,0 +1,122 @@
+---
+description: Google Apps Script integration patterns and API communication
+---
+
+# Google Apps Script Integration Rules
+
+## GAS WebApp Endpoint Pattern
+```javascript
+// Standard POST request structure for GAS WebApp
+const sendToGAS = async (gasUrl, data) => {
+  const response = await fetch(gasUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ rows: data })
+  });
+  return await response.json();
+};
+```
+
+## Expected GAS Response Format
+```javascript
+// Success response
+{ "ok": true, "inserted": 5 }
+
+// Error response  
+{ "ok": false, "error": "Error message" }
+```
+
+## Data Structure for Sheet Integration
+```javascript
+// Send data as array of arrays for direct sheet insertion
+const rows = [
+  ["filename1.png", "https://example.com/image1.png"],
+  ["filename2.jpg", "https://example.com/image2.jpg"]
+];
+
+// GAS will automatically handle:
+// - Header row creation ("name", "request_url")
+// - Batch insertion to sheet
+// - Sheet creation if not exists
+```
+
+## GAS Code.gs Template Reference
+```javascript
+// Expected GAS WebApp structure (from PLAN.md)
+function doPost(e) {
+  const body = JSON.parse(e.postData.contents);
+  const rows = body?.rows || [];
+  
+  // Insert to spreadsheet
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
+  
+  // Handle headers and data insertion
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(["name", "request_url"]);
+  }
+  sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, 2).setValues(rows);
+  
+  return ContentService.createTextOutput(JSON.stringify({ ok: true, inserted: rows.length }));
+}
+```
+
+## Authentication Considerations
+- **Anonymous Access**: Set GAS deployment to "全員（匿名）" for simplest setup
+- **Authenticated Access**: Use "全員" with `credentials: "include"` in fetch options
+- **URL Security**: Store GAS WebApp URL in `chrome.storage.local` for persistence
+
+## Error Handling Standards
+```javascript
+// Validate GAS URL before sending
+const validateGASUrl = (url) => {
+  if (!url.trim()) {
+    throw new Error("GASのWebApp URLを設定してください");
+  }
+  if (!url.includes("script.google.com")) {
+    console.warn("URLがGoogle Apps Scriptドメインではありません");
+  }
+};
+
+// Handle network and parsing errors
+try {
+  const result = await sendToGAS(gasUrl, rows);
+  if (result.ok) {
+    alert(`送信成功: ${result.inserted}件のデータを追加しました`);
+  } else {
+    alert(`送信エラー: ${result.error}`);
+  }
+} catch (e) {
+  alert(`通信エラー: ${e.message}`);
+}
+```
+
+## Data Validation Before Sending
+```javascript
+// Ensure data quality before GAS transmission
+const validateData = (rows) => {
+  if (!Array.isArray(rows) || rows.length === 0) {
+    throw new Error("送信するデータがありません");
+  }
+  
+  // Validate each row has name and URL
+  const invalidRows = rows.filter(row => !row[0] || !row[1]);
+  if (invalidRows.length > 0) {
+    console.warn(`${invalidRows.length}件の不完全なデータをスキップします`);
+  }
+  
+  return rows.filter(row => row[0] && row[1]);
+};
+```
+
+## Spreadsheet Configuration
+- **Column Structure**: Always use ["name", "request_url"] as headers
+- **Sheet Naming**: Default to "Sheet1" or allow dynamic sheet naming in future
+- **Data Appending**: GAS handles row appending automatically
+- **Duplicate Handling**: Consider implementing duplicate URL detection in GAS
+
+## Rate Limiting & Performance
+- Batch data collection before sending (don't send individual requests)
+- Consider implementing retry logic for failed GAS requests
+- Monitor GAS execution time limits (6 minutes for WebApps)
+- Implement client-side data validation to reduce GAS processing load

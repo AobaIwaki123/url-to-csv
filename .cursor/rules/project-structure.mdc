@@ -1,0 +1,35 @@
+---
+alwaysApply: true
+---
+
+# Net2Sheet Chrome Extension - Project Structure
+
+This is a **Chrome Extension (Manifest V3)** that collects image requests from DevTools Network panel and exports them to CSV or Google Sheets via Google Apps Script.
+
+## Project Overview
+- **Purpose**: Monitor browser network requests, filter image resources, and export data to spreadsheets
+- **Architecture**: Chrome DevTools Extension + Google Apps Script WebApp integration
+- **Target**: Web developers and content managers who need to track image assets
+
+## File Structure
+```
+net2sheet/
+├─ [manifest.json](mdc:net2sheet/manifest.json)     # Chrome extension manifest (MV3)
+├─ [devtools.html](mdc:net2sheet/devtools.html)     # DevTools panel UI
+├─ [devtools.js](mdc:net2sheet/devtools.js)         # Main logic for network monitoring & data export
+└─ service_worker.js                                 # Background script (future use)
+```
+
+## Key Components
+1. **DevTools Extension**: Custom panel in Chrome DevTools for real-time network monitoring
+2. **Image Filter**: Identifies image requests by file extension (.png, .jpg, .webp, etc.)
+3. **Data Export**: CSV download and Google Sheets integration via GAS WebApp
+4. **Settings**: Persistent storage for GAS WebApp URL configuration
+
+## Development Focus
+- **Real-time data collection** from `chrome.devtools.network.onRequestFinished`
+- **CSV generation** with proper escaping for spreadsheet compatibility
+- **External API integration** with Google Apps Script for sheet writing
+- **User-friendly DevTools panel** with collection controls and preview
+
+Refer to [PLAN.md](mdc:PLAN.md) for detailed implementation guide and GAS setup instructions.
