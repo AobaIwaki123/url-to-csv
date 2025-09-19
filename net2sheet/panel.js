@@ -68,6 +68,59 @@ const generateCSVFilename = (prefix = "network_images", date = new Date()) => {
   const timestamp = date.toISOString().slice(0, 19).replace(/[T:]/g, "_");
   return `${prefix}_${timestamp}.csv`;
 };
+
+/**
+ * 完全一致する重複行を削除する
+ * @param {Array<Array>} rows - 行データの配列 [[name, url], ...]
+ * @returns {Array<Array>} 重複除去後の行データ
+ */
+const removeDuplicateRows = (rows) => {
+  const seen = new Set();
+  const uniqueRows = [];
+
+  for (const row of rows) {
+    // 行全体を文字列化してキーとして使用
+    const rowKey = JSON.stringify(row);
+    if (!seen.has(rowKey)) {
+      seen.add(rowKey);
+      uniqueRows.push(row);
+    }
+  }
+
+  return uniqueRows;
+};
+
+// ===== テスト・デバッグ用関数 =====
+
+/**
+ * 重複除去機能のテスト関数（開発用）
+ * コンソールで testDuplicateRemoval() を実行してテストできます
+ */
+const testDuplicateRemoval = () => {
+  const testData = [
+    ["image1.png", "https://example.com/image1.png"],
+    ["image2.jpg", "https://example.com/image2.jpg"],
+    ["image1.png", "https://example.com/image1.png"], // 重複
+    ["image3.gif", "https://example.com/image3.gif"],
+    ["image2.jpg", "https://example.com/image2.jpg"], // 重複
+    ["image4.webp", "https://example.com/image4.webp"],
+    ["image1.png", "https://example.com/image1.png"], // 重複
+  ];
+
+  console.log("=== 重複除去テスト ===");
+  console.log("元のデータ (7件):");
+  console.table(testData);
+
+  const uniqueData = removeDuplicateRows(testData);
+  console.log("重複除去後 (4件):");
+  console.table(uniqueData);
+
+  const removedCount = testData.length - uniqueData.length;
+  console.log(`重複除去: ${removedCount}件`);
+
+  return { original: testData, unique: uniqueData, removedCount };
+};
+
 const updateView = () => {
   $("count").textContent = String(rows.length);
 
@@ -98,8 +151,12 @@ $("exportCsv").onclick = () => {
   }
 
   try {
+    // 重複除去処理
+    const uniqueRows = removeDuplicateRows(rows);
+    const removedCount = rows.length - uniqueRows.length;
+
     // CSV生成
-    const csv = generateCSV(rows);
+    const csv = generateCSV(uniqueRows);
     const filename = generateCSVFilename();
 
     // ダウンロード実行
@@ -111,8 +168,12 @@ $("exportCsv").onclick = () => {
     a.click();
     URL.revokeObjectURL(url);
 
-    // 成功フィードバック
-    alert(`CSV出力完了！\nファイル名: ${filename}\n件数: ${rows.length}件`);
+    // 成功フィードバック（重複除去情報も含む）
+    let message = `CSV出力完了！\nファイル名: ${filename}\n出力件数: ${uniqueRows.length}件`;
+    if (removedCount > 0) {
+      message += `\n重複除去: ${removedCount}件`;
+    }
+    alert(message);
   } catch (error) {
     alert(`CSV出力エラー: ${error.message}`);
     console.error("CSV export error:", error);
