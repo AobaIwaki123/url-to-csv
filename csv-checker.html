@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSV Image Checker - 画像チェックツール</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+          sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        text-align: center;
+        margin-bottom: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+      }
+
+      .upload-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+      }
+
+      .file-input-wrapper {
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+        background: linear-gradient(45deg, #4caf50, #45a049);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+        font-weight: bold;
+      }
+
+      .file-input-wrapper:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      #csvFile {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+      }
+
+      .controls {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .btn-primary {
+        background: linear-gradient(45deg, #2196f3, #1976d2);
+        color: white;
+      }
+
+      .btn-success {
+        background: linear-gradient(45deg, #4caf50, #45a049);
+        color: white;
+      }
+
+      .btn-warning {
+        background: linear-gradient(45deg, #ff9800, #f57c00);
+        color: white;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .stats {
+        display: flex;
+        gap: 2rem;
+        font-size: 1.1rem;
+      }
+
+      .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .stat-number {
+        font-weight: bold;
+        font-size: 1.3rem;
+        color: #667eea;
+      }
+
+      .image-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+      }
+
+      .image-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .image-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      .image-card.excluded {
+        opacity: 0.6;
+        background: #f8f8f8;
+      }
+
+      .image-preview {
+        width: 100%;
+        height: 200px;
+        object-fit: contain;
+        background: #f0f0f0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .image-preview.error {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-size: 0.9rem;
+        background: #f8f8f8;
+      }
+
+      .image-info {
+        padding: 1rem;
+      }
+
+      .image-name-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+        transition: border-color 0.3s ease;
+      }
+
+      .image-name-input:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .image-url {
+        font-size: 0.8rem;
+        color: #666;
+        word-break: break-all;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+      }
+
+      .exclude-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: bold;
+      }
+
+      .exclude-checkbox input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+        font-size: 1.2rem;
+        color: #667eea;
+      }
+
+      .no-data {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #999;
+        font-size: 1.2rem;
+      }
+
+      .error-message {
+        background: #ffebee;
+        color: #c62828;
+        padding: 1rem;
+        border-radius: 5px;
+        margin: 1rem 0;
+        border-left: 4px solid #c62828;
+      }
+
+      .success-message {
+        background: #e8f5e8;
+        color: #2e7d32;
+        padding: 1rem;
+        border-radius: 5px;
+        margin: 1rem 0;
+        border-left: 4px solid #2e7d32;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 10px;
+        }
+
+        h1 {
+          font-size: 2rem;
+        }
+
+        .controls {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .stats {
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .image-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>📷 CSV Image Checker</h1>
+        <p class="subtitle">Net2Sheet CSVファイルの画像チェック＆編集ツール</p>
+      </header>
+
+      <div class="upload-section">
+        <h2>📁 CSVファイルを選択</h2>
+        <p style="margin-bottom: 1rem; color: #666">
+          Net2Sheet拡張で生成されたCSVファイルを選択してください。
+          ファイル形式：「ファイル名」,「URL」
+        </p>
+        <div class="file-input-wrapper">
+          <input type="file" id="csvFile" accept=".csv" />
+          📄 CSVファイルを選択
+        </div>
+      </div>
+
+      <div class="controls" style="display: none" id="controls">
+        <div class="stats">
+          <div class="stat-item">
+            <span>📊 総数:</span>
+            <span class="stat-number" id="totalCount">0</span>
+          </div>
+          <div class="stat-item">
+            <span>✅ 有効:</span>
+            <span class="stat-number" id="validCount">0</span>
+          </div>
+          <div class="stat-item">
+            <span>❌ 除外:</span>
+            <span class="stat-number" id="excludedCount">0</span>
+          </div>
+        </div>
+        <div>
+          <button class="btn btn-warning" id="toggleExcluded">
+            👁️ 除外画像を隠す/表示
+          </button>
+          <button class="btn btn-success" id="exportCsv">
+            💾 修正版CSVをダウンロード
+          </button>
+        </div>
+      </div>
+
+      <div class="loading" id="loading">🔄 画像を読み込み中...</div>
+
+      <div class="no-data" id="noData">
+        📋 CSVファイルを選択すると、画像一覧が表示されます
+      </div>
+
+      <div class="image-grid" id="imageGrid"></div>
+    </div>
+
+    <script>
+      // グローバル変数
+      let imageData = [];
+      let showExcluded = true;
+
+      // DOM要素の取得
+      const csvFileInput = document.getElementById("csvFile");
+      const controls = document.getElementById("controls");
+      const loading = document.getElementById("loading");
+      const noData = document.getElementById("noData");
+      const imageGrid = document.getElementById("imageGrid");
+      const totalCount = document.getElementById("totalCount");
+      const validCount = document.getElementById("validCount");
+      const excludedCount = document.getElementById("excludedCount");
+      const toggleExcludedBtn = document.getElementById("toggleExcluded");
+      const exportCsvBtn = document.getElementById("exportCsv");
+
+      // CSVファイル選択イベント
+      csvFileInput.addEventListener("change", handleFileSelect);
+      toggleExcludedBtn.addEventListener("click", toggleExcludedImages);
+      exportCsvBtn.addEventListener("click", exportModifiedCsv);
+
+      /**
+       * CSVファイル選択処理
+       */
+      async function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (!file.name.toLowerCase().endsWith(".csv")) {
+          showError("CSVファイルを選択してください。");
+          return;
+        }
+
+        try {
+          showLoading(true);
+          const csvText = await readFileAsText(file);
+          const parsedData = parseCSV(csvText);
+
+          if (parsedData.length === 0) {
+            showError("CSVファイルにデータが見つかりません。");
+            return;
+          }
+
+          imageData = parsedData.map((row, index) => ({
+            id: index,
+            originalName: row[0] || "",
+            editedName: row[0] || "",
+            url: row[1] || "",
+            excluded: false,
+          }));
+
+          await renderImages();
+          updateStats();
+          showControls(true);
+          showSuccess(`${imageData.length}件の画像データを読み込みました。`);
+        } catch (error) {
+          showError(`ファイル読み込みエラー: ${error.message}`);
+        } finally {
+          showLoading(false);
+        }
+      }
+
+      /**
+       * ファイルをテキストとして読み込み
+       */
+      function readFileAsText(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.onerror = () =>
+            reject(new Error("ファイル読み込みに失敗しました"));
+          reader.readAsText(file, "UTF-8");
+        });
+      }
+
+      /**
+       * CSV解析（簡易版）
+       */
+      function parseCSV(csvText) {
+        const lines = csvText.trim().split("\n");
+        const data = [];
+
+        // ヘッダー行をスキップ（「ファイル名」,「URL」）
+        const startIndex =
+          lines[0].includes("ファイル名") || lines[0].includes("Filename")
+            ? 1
+            : 0;
+
+        for (let i = startIndex; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+
+          // 簡易CSV解析（クォート対応）
+          const row = parseCSVLine(line);
+          if (row.length >= 2) {
+            data.push(row);
+          }
+        }
+
+        return data;
+      }
+
+      /**
+       * CSV行解析（クォート対応）
+       */
+      function parseCSVLine(line) {
+        const result = [];
+        let current = "";
+        let inQuotes = false;
+        let i = 0;
+
+        while (i < line.length) {
+          const char = line[i];
+
+          if (char === '"') {
+            if (inQuotes && line[i + 1] === '"') {
+              // エスケープされたクォート
+              current += '"';
+              i += 2;
+            } else {
+              // クォートの開始/終了
+              inQuotes = !inQuotes;
+              i++;
+            }
+          } else if (char === "," && !inQuotes) {
+            // フィールド区切り
+            result.push(current);
+            current = "";
+            i++;
+          } else {
+            current += char;
+            i++;
+          }
+        }
+
+        result.push(current);
+        return result;
+      }
+
+      /**
+       * 画像一覧表示
+       */
+      async function renderImages() {
+        imageGrid.innerHTML = "";
+
+        const visibleImages = imageData.filter(
+          (img) => showExcluded || !img.excluded
+        );
+
+        if (visibleImages.length === 0) {
+          imageGrid.innerHTML =
+            '<div class="no-data">表示する画像がありません</div>';
+          return;
+        }
+
+        for (const img of visibleImages) {
+          const card = createImageCard(img);
+          imageGrid.appendChild(card);
+        }
+      }
+
+      /**
+       * 画像カード作成
+       */
+      function createImageCard(img) {
+        const card = document.createElement("div");
+        card.className = `image-card ${img.excluded ? "excluded" : ""}`;
+        card.dataset.id = img.id;
+
+        card.innerHTML = `
+                <div class="image-preview-container">
+                    <img class="image-preview" src="${img.url}" alt="${
+          img.editedName
+        }"
+                         onerror="this.className='image-preview error'; this.innerHTML='🖼️ 画像を読み込めません';" />
+                </div>
+                <div class="image-info">
+                    <input type="text" class="image-name-input" value="${escapeHtml(
+                      img.editedName
+                    )}" 
+                           placeholder="画像名を入力..." data-id="${img.id}" />
+                    <div class="image-url">${escapeHtml(img.url)}</div>
+                    <label class="exclude-checkbox">
+                        <input type="checkbox" ${
+                          img.excluded ? "checked" : ""
+                        } data-id="${img.id}" />
+                        🚫 この画像を除外する
+                    </label>
+                </div>
+            `;
+
+        // イベントリスナー追加
+        const nameInput = card.querySelector(".image-name-input");
+        const excludeCheckbox = card.querySelector('input[type="checkbox"]');
+
+        nameInput.addEventListener("input", (e) => {
+          const imgId = parseInt(e.target.dataset.id);
+          const imgItem = imageData.find((item) => item.id === imgId);
+          if (imgItem) {
+            imgItem.editedName = e.target.value;
+          }
+        });
+
+        excludeCheckbox.addEventListener("change", (e) => {
+          const imgId = parseInt(e.target.dataset.id);
+          const imgItem = imageData.find((item) => item.id === imgId);
+          if (imgItem) {
+            imgItem.excluded = e.target.checked;
+            card.className = `image-card ${imgItem.excluded ? "excluded" : ""}`;
+            updateStats();
+          }
+        });
+
+        return card;
+      }
+
+      /**
+       * 統計情報更新
+       */
+      function updateStats() {
+        const total = imageData.length;
+        const excluded = imageData.filter((img) => img.excluded).length;
+        const valid = total - excluded;
+
+        totalCount.textContent = total;
+        validCount.textContent = valid;
+        excludedCount.textContent = excluded;
+      }
+
+      /**
+       * 除外画像の表示/非表示切り替え
+       */
+      async function toggleExcludedImages() {
+        showExcluded = !showExcluded;
+        toggleExcludedBtn.textContent = showExcluded
+          ? "👁️ 除外画像を隠す"
+          : "👁️ 除外画像を表示";
+        await renderImages();
+      }
+
+      /**
+       * 修正版CSV出力
+       */
+      function exportModifiedCsv() {
+        const validImages = imageData.filter((img) => !img.excluded);
+
+        if (validImages.length === 0) {
+          showError("出力する画像データがありません。");
+          return;
+        }
+
+        try {
+          // CSV生成
+          const csvContent = generateCSV(validImages);
+          const filename = generateCSVFilename("modified_images");
+
+          // ダウンロード実行
+          downloadCSV(csvContent, filename);
+          showSuccess(
+            `修正版CSVを出力しました。\nファイル名: ${filename}\n件数: ${validImages.length}件`
+          );
+        } catch (error) {
+          showError(`CSV出力エラー: ${error.message}`);
+        }
+      }
+
+      /**
+       * CSV生成（Net2Sheet形式に合わせる）
+       */
+      function generateCSV(images) {
+        const headers = ["ファイル名", "URL"];
+        const rows = [csvRow(headers)];
+
+        images.forEach((img) => {
+          rows.push(csvRow([img.editedName, img.url]));
+        });
+
+        return rows.join("\n");
+      }
+
+      /**
+       * CSV行生成（クォートエスケープ対応）
+       */
+      function csvRow(row) {
+        return row
+          .map((value) => `"${(value || "").replace(/"/g, '""')}"`)
+          .join(",");
+      }
+
+      /**
+       * CSVファイル名生成
+       */
+      function generateCSVFilename(prefix = "modified_images") {
+        const now = new Date();
+        const timestamp = now.toISOString().slice(0, 19).replace(/[T:]/g, "_");
+        return `${prefix}_${timestamp}.csv`;
+      }
+
+      /**
+       * CSVダウンロード
+       */
+      function downloadCSV(csvContent, filename) {
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      /**
+       * HTMLエスケープ
+       */
+      function escapeHtml(unsafe) {
+        return (unsafe || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      /**
+       * UI状態管理関数
+       */
+      function showLoading(show) {
+        loading.style.display = show ? "block" : "none";
+        noData.style.display = show
+          ? "none"
+          : !imageData.length
+          ? "block"
+          : "none";
+      }
+
+      function showControls(show) {
+        controls.style.display = show ? "flex" : "none";
+        noData.style.display = show ? "none" : "block";
+      }
+
+      function showError(message) {
+        const error = document.createElement("div");
+        error.className = "error-message";
+        error.textContent = message;
+        document.querySelector(".container").insertBefore(error, controls);
+        setTimeout(() => error.remove(), 5000);
+      }
+
+      function showSuccess(message) {
+        const success = document.createElement("div");
+        success.className = "success-message";
+        success.textContent = message;
+        document.querySelector(".container").insertBefore(success, controls);
+        setTimeout(() => success.remove(), 5000);
+      }
+    </script>
+  </body>
+</html>
