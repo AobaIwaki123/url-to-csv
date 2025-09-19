@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Net2Sheet",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "DevToolsのNetworkから画像リクエスト(name, url)を収集し、CSV化&スプレッドシートに送信",
   "permissions": ["storage", "scripting"],
   "host_permissions": ["<all_urls>"],
