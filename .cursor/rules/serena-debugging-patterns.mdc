@@ -1,0 +1,197 @@
+---
+globs: *.js,*.html
+description: Serena MCP debugging and troubleshooting patterns for efficient problem solving
+---
+
+# Serena MCP デバッグ・トラブルシューティングパターン
+
+効率的な問題解決のためのSerena MCPデバッグパターンです。
+
+## 問題特定パターン
+
+### エラー検索
+```javascript
+// エラーメッセージ検索
+mcp_serena_search_for_pattern("Error|error|ERROR", "")
+mcp_serena_search_for_pattern("Exception|exception", "")
+mcp_serena_search_for_pattern("Failed|failed|FAILED", "")
+
+// コンソールログ検索
+mcp_serena_search_for_pattern("console\.(log|error|warn|debug)", "")
+
+// 例外処理検索
+mcp_serena_search_for_pattern("try.*catch|throw", "")
+```
+
+### パフォーマンス問題検索
+```javascript
+// ループ処理検索
+mcp_serena_search_for_pattern("for.*of|forEach|map|filter|reduce", "")
+
+// 非同期処理検索
+mcp_serena_search_for_pattern("async|await|Promise|then|catch", "")
+
+// メモリ使用量検索
+mcp_serena_search_for_pattern("memory|cache|storage|localStorage", "")
+```
+
+### ネットワーク問題検索
+```javascript
+// ネットワーク処理検索
+mcp_serena_search_for_pattern("fetch|XMLHttpRequest|axios|$.ajax", "")
+
+// タイムアウト検索
+mcp_serena_search_for_pattern("timeout|setTimeout|setInterval", "")
+
+// CORS問題検索
+mcp_serena_search_for_pattern("CORS|cors|Access-Control", "")
+```
+
+## デバッグワークフロー
+
+### 1. 問題の特定
+```javascript
+// エラー関連のシンボル検索
+mcp_serena_find_symbol("error", "")
+mcp_serena_find_symbol("handleError", "")
+mcp_serena_find_symbol("validate", "")
+
+// 問題のある関数の特定
+mcp_serena_find_symbol("functionName", "specific/file/path.js")
+```
+
+### 2. 影響範囲の調査
+```javascript
+// 関数の使用箇所検索
+mcp_serena_find_referencing_symbols("functionName", "file/path.js")
+
+// 関連するシンボル検索
+mcp_serena_find_symbol("relatedFunction", "")
+mcp_serena_find_symbol("helperFunction", "")
+```
+
+### 3. 根本原因の特定
+```javascript
+// データフロー追跡
+mcp_serena_search_for_pattern("functionName.*\(|functionName.*=", "")
+
+// 状態管理検索
+mcp_serena_search_for_pattern("state|State|status|Status", "")
+
+// 設定値検索
+mcp_serena_search_for_pattern("config|Config|setting|Setting", "")
+```
+
+## 画像URLスクレイパー特化デバッグ
+
+### CSV処理問題
+```javascript
+// CSV生成関数の検索
+mcp_serena_find_symbol("generateCSV", "")
+mcp_serena_find_symbol("parseCSV", "")
+mcp_serena_find_symbol("exportCSV", "")
+
+// CSV形式検索
+mcp_serena_search_for_pattern("ファイル名.*URL|filename.*url", "")
+
+// CSVエラー検索
+mcp_serena_search_for_pattern("CSV.*error|CSV.*Error", "")
+```
+
+### 画像処理問題
+```javascript
+// 画像検出関数の検索
+mcp_serena_find_symbol("isImageURL", "")
+mcp_serena_find_symbol("extractImages", "")
+mcp_serena_find_symbol("filterImages", "")
+
+// 画像拡張子検索
+mcp_serena_search_for_pattern("IMAGE_EXTS|image.*ext", "")
+
+// 画像URL検証検索
+mcp_serena_search_for_pattern("validate.*image|image.*valid", "")
+```
+
+### ネットワーク監視問題
+```javascript
+// ネットワーク監視関数の検索
+mcp_serena_find_symbol("monitorNetwork", "")
+mcp_serena_find_symbol("captureRequest", "")
+mcp_serena_find_symbol("handleRequest", "")
+
+// リクエスト処理検索
+mcp_serena_search_for_pattern("request.*capture|network.*monitor", "")
+
+// イベントリスナー検索
+mcp_serena_search_for_pattern("addEventListener.*request|onRequest", "")
+```
+
+## 思考ツール活用
+
+### 情報収集後の分析
+```javascript
+// 収集した情報の分析
+mcp_serena_think_about_collected_information()
+
+// タスク進捗の確認
+mcp_serena_think_about_task_adherence()
+
+// 完了判定
+mcp_serena_think_about_whether_you_are_done()
+```
+
+## デバッグメモリ管理
+
+### 問題記録
+```javascript
+// 発見した問題をメモリに記録
+mcp_serena_write_memory("debug-issue-001", `
+# 問題: CSV出力で文字化け
+- 発生箇所: generateCSV関数
+- 原因: エンコーディング設定不備
+- 解決策: UTF-8 BOM追加
+- ステータス: 解決済み
+`)
+
+// 解決策をメモリに記録
+mcp_serena_write_memory("debug-solution-001", `
+# 解決策: CSV文字化け対応
+- 方法: BlobにUTF-8 BOMを追加
+- コード: new Blob(['\uFEFF' + csvContent], {type: 'text/csv;charset=utf-8'})
+- 適用箇所: 全CSV出力関数
+`)
+```
+
+### パターン記録
+```javascript
+// よくある問題パターンを記録
+mcp_serena_write_memory("common-issues", `
+# よくある問題パターン
+1. CSV文字化け: UTF-8 BOM追加
+2. 画像URL検出漏れ: 拡張子チェック強化
+3. ネットワーク監視漏れ: イベントリスナー確認
+4. メモリリーク: イベントリスナー削除
+5. パフォーマンス問題: ループ最適化
+`)
+```
+
+## デバッグチェックリスト
+
+### 問題発見時
+- [ ] エラーメッセージを特定
+- [ ] 関連するシンボルを検索
+- [ ] 影響範囲を調査
+- [ ] 根本原因を特定
+
+### 解決策実装時
+- [ ] 修正内容をメモリに記録
+- [ ] 関連する関数を更新
+- [ ] テストケースを確認
+- [ ] ドキュメントを更新
+
+### 完了時
+- [ ] 解決策をメモリに保存
+- [ ] パターンを記録
+- [ ] 今後の参考情報を整理
+
+このデバッグパターンにより、Serena MCPを活用した効率的な問題解決が可能になります。

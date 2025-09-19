@@ -1,0 +1,131 @@
+---
+alwaysApply: true
+description: Serena MCP optimization patterns and best practices for efficient development
+---
+
+# Serena MCP 最適化ガイド
+
+Serena MCPを活用して実装を効率化するための包括的なガイドです。
+
+## 基本ワークフロー
+
+### 1. プロジェクト開始時
+```javascript
+// 必ず最初に実行
+mcp_serena_activate_project("url-to-csv")
+mcp_serena_check_onboarding_performed()
+// オンボーディングが未完了の場合は実行
+mcp_serena_onboarding()
+```
+
+### 2. 情報収集フェーズ
+```javascript
+// シンボル検索（最も効率的）
+mcp_serena_find_symbol("functionName", "relative/path/to/file.js")
+mcp_serena_find_referencing_symbols("functionName", "relative/path/to/file.js")
+
+// パターン検索（複雑な検索）
+mcp_serena_search_for_pattern("regex_pattern", "relative/path", {
+  context_lines_before: 2,
+  context_lines_after: 2
+})
+
+// ファイル構造理解
+mcp_serena_get_symbols_overview("relative/path/to/file.js")
+mcp_serena_list_dir("relative/path", true) // 再帰的
+```
+
+### 3. 思考・分析フェーズ
+```javascript
+// 情報収集後の分析
+mcp_serena_think_about_collected_information()
+
+// タスク進捗確認
+mcp_serena_think_about_task_adherence()
+
+// 完了判定
+mcp_serena_think_about_whether_you_are_done()
+```
+
+## 効率的な実装パターン
+
+### シンボルベース編集
+```javascript
+// 関数の置き換え
+mcp_serena_replace_symbol_body("functionName", "relative/path", "newFunctionBody")
+
+// シンボル前後に挿入
+mcp_serena_insert_before_symbol("functionName", "relative/path", "newCode")
+mcp_serena_insert_after_symbol("functionName", "relative/path", "newCode")
+```
+
+### メモリ活用
+```javascript
+// 重要な情報をメモリに保存
+mcp_serena_write_memory("project-architecture", "アーキテクチャの詳細説明")
+
+// メモリ一覧確認
+mcp_serena_list_memories()
+
+// メモリ読み込み
+mcp_serena_read_memory("project-architecture")
+```
+
+## プロジェクト固有の最適化
+
+### 画像URLスクレイパー特化
+- **シンボル検索**: `mcp_serena_find_symbol`で関数名検索を優先
+- **パターン検索**: 画像拡張子検索に`mcp_serena_search_for_pattern`を活用
+- **CSV処理**: 一貫性確保のため`mcp_serena_find_symbol`でCSV関連関数を特定
+
+### 効率的な検索戦略
+1. **名前ベース検索**: `find_symbol`で関数・クラス名から開始
+2. **参照検索**: `find_referencing_symbols`で使用箇所を特定
+3. **パターン検索**: 複雑な条件は`search_for_pattern`を使用
+4. **構造理解**: `get_symbols_overview`でファイル全体を把握
+
+## エラー回避パターン
+
+### よくある問題と解決策
+- **シンボルが見つからない**: `substring_matching: true`を試す
+- **パスエラー**: 相対パスを正確に指定
+- **メモリ不足**: `max_answer_chars`で制限を設定
+
+### デバッグ手順
+1. `mcp_serena_get_current_config()`で設定確認
+2. `mcp_serena_list_dir()`でファイル構造確認
+3. `mcp_serena_find_symbol`で段階的に検索範囲を絞る
+
+## パフォーマンス最適化
+
+### 検索効率化
+- ファイルパスを指定して検索範囲を限定
+- `include_kinds`/`exclude_kinds`でシンボル種別を絞り込み
+- 大規模検索は`max_answer_chars`で制限
+
+### メモリ管理
+- 重要な情報は`write_memory`で永続化
+- 不要なメモリは`delete_memory`で削除
+- プロジェクト固有の情報は適切に命名
+
+## 実装チェックリスト
+
+### 実装前
+- [ ] プロジェクトアクティベート
+- [ ] オンボーディング確認
+- [ ] 関連シンボル検索
+- [ ] 既存コード構造理解
+
+### 実装中
+- [ ] 段階的な情報収集
+- [ ] 思考ツールで進捗確認
+- [ ] メモリに重要な情報を保存
+- [ ] シンボルベース編集を活用
+
+### 実装後
+- [ ] 完了判定の実行
+- [ ] 変更内容の確認
+- [ ] メモリの整理
+- [ ] ドキュメント更新
+
+このガイドに従うことで、Serena MCPを最大限活用した効率的な開発が可能になります。
