@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Net2Sheet デバッグガイド</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      .step {
+        background: #f8f9fa;
+        border-left: 4px solid #007bff;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 0 8px 8px 0;
+      }
+      .error {
+        background: #fff5f5;
+        border-left: 4px solid #dc3545;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 0 8px 8px 0;
+      }
+      .success {
+        background: #f0f9ff;
+        border-left: 4px solid #28a745;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 0 8px 8px 0;
+      }
+      code {
+        background: #e9ecef;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: "Monaco", "Menlo", monospace;
+      }
+      .checklist {
+        background: #fffbf0;
+        border: 1px solid #ffd60a;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+      }
+      .checklist h3 {
+        margin-top: 0;
+        color: #b45309;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔧 Net2Sheet トラブルシューティングガイド</h1>
+
+    <div class="checklist">
+      <h3>📋 問題解決チェックリスト</h3>
+      <p>以下の手順を順番に実行して、問題を特定してください：</p>
+    </div>
+
+    <div class="step">
+      <h3>ステップ1: 拡張機能のインストール確認</h3>
+      <ol>
+        <li><code>chrome://extensions/</code> をアドレスバーに入力</li>
+        <li>「Net2Sheet」拡張機能が表示されているか確認</li>
+        <li>
+          拡張機能が<strong>有効</strong>になっているか確認（スイッチがON）
+        </li>
+        <li>エラーメッセージが表示されていないか確認</li>
+      </ol>
+      <p><strong>もし表示されていない場合：</strong></p>
+      <ul>
+        <li>「デベロッパーモード」がONになっているか確認</li>
+        <li>「パッケージ化されていない拡張機能を読み込む」をクリック</li>
+        <li><code>net2sheet</code>フォルダを選択</li>
+      </ul>
+    </div>
+
+    <div class="step">
+      <h3>ステップ2: DevToolsパネルの確認</h3>
+      <ol>
+        <li><strong>F12</strong>キーでDevToolsを開く</li>
+        <li>タブ一覧に<strong>「Net2Sheet」</strong>が表示されているか確認</li>
+        <li>「Net2Sheet」タブをクリック</li>
+        <li>パネルが正しく表示されるか確認</li>
+      </ol>
+      <p><strong>もしタブが表示されない場合：</strong></p>
+      <ul>
+        <li>ページを再読み込み（F5）してからDevToolsを開き直す</li>
+        <li>DevToolsを閉じて再度開く</li>
+        <li>拡張機能を無効化→有効化してページを再読み込み</li>
+      </ul>
+    </div>
+
+    <div class="step">
+      <h3>ステップ3: コンソールエラーの確認</h3>
+      <ol>
+        <li>DevToolsで<strong>「Console」</strong>タブを開く</li>
+        <li>赤いエラーメッセージがないか確認</li>
+        <li>「Net2Sheet panel created successfully」メッセージを探す</li>
+      </ol>
+      <p><strong>期待されるメッセージ：</strong></p>
+      <ul>
+        <li><code>Net2Sheet extension installed</code></li>
+        <li><code>Net2Sheet panel created successfully</code></li>
+      </ul>
+    </div>
+
+    <div class="step">
+      <h3>ステップ4: パネル機能のテスト</h3>
+      <ol>
+        <li>Net2Sheetパネルで「<strong>収集開始</strong>」ボタンをクリック</li>
+        <li>ページを再読み込み（F5）</li>
+        <li><strong>収集件数</strong>が0から増加するか確認</li>
+        <li><strong>プレビューエリア</strong>にデータが表示されるか確認</li>
+      </ol>
+    </div>
+
+    <div class="error">
+      <h3>❌ よくある問題と解決方法</h3>
+
+      <h4>問題1: DevToolsに「Net2Sheet」タブが表示されない</h4>
+      <p><strong>解決方法：</strong></p>
+      <ul>
+        <li>
+          拡張機能のリロード: <code>chrome://extensions/</code> →
+          「再読み込み」ボタン
+        </li>
+        <li>manifest.jsonのdevtools_pageが正しく設定されているか確認</li>
+        <li>ブラウザの再起動</li>
+      </ul>
+
+      <h4>問題2: 収集開始を押しても何も起こらない</h4>
+      <p><strong>解決方法：</strong></p>
+      <ul>
+        <li>Networkタブで実際に画像リクエストが発生しているか確認</li>
+        <li>Console タブでJavaScriptエラーがないか確認</li>
+        <li>panel.jsが正しく読み込まれているか確認</li>
+      </ul>
+
+      <h4>問題3: 画像が検出されない</h4>
+      <p><strong>解決方法：</strong></p>
+      <ul>
+        <li>画像の拡張子が対象（.jpg, .png, .gif, .webp, .svg等）か確認</li>
+        <li>
+          キャッシュされた画像は検出されない場合があるためハードリロード（Ctrl+Shift+R）を試す
+        </li>
+        <li>Networkタブの「Disable cache」にチェックを入れる</li>
+      </ul>
+    </div>
+
+    <div class="success">
+      <h3>✅ 正常動作の確認方法</h3>
+      <ol>
+        <li><strong>拡張機能が有効</strong>で、エラーがない</li>
+        <li><strong>DevToolsに「Net2Sheet」タブ</strong>が表示される</li>
+        <li>
+          <strong>「収集開始」後にページ再読み込み</strong>で収集件数が増加
+        </li>
+        <li><strong>プレビューエリア</strong>にCSV形式のデータが表示される</li>
+        <li><strong>CSVダウンロード</strong>が正常に実行される</li>
+      </ol>
+    </div>
+
+    <div class="step">
+      <h3>🔍 詳細デバッグ情報</h3>
+      <p>以下の情報を確認することで、より詳細な問題を特定できます：</p>
+
+      <h4>1. 拡張機能のファイル構成</h4>
+      <pre><code>net2sheet/
+├── manifest.json          (devtools_page: "devtools-page.html")
+├── devtools-page.html     (エントリーポイント)
+├── devtools-page.js       (chrome.devtools.panels.create実行)
+├── panel.html             (実際のパネルUI)
+├── panel.js               (パネルの機能実装)
+└── service_worker.js      (バックグラウンド処理)</code></pre>
+
+      <h4>2. 重要なAPIの確認</h4>
+      <ul>
+        <li>
+          <code>chrome.devtools.network.onRequestFinished</code> -
+          リクエスト監視
+        </li>
+        <li><code>chrome.devtools.panels.create</code> - パネル作成</li>
+        <li><code>chrome.storage.local</code> - 設定保存</li>
+      </ul>
+
+      <h4>3. 画像検出の仕組み</h4>
+      <ul>
+        <li>URL の pathname から拡張子を抽出</li>
+        <li>IMAGE_EXTS セットで対象拡張子をチェック</li>
+        <li>collecting フラグがtrueの時のみ収集</li>
+      </ul>
+    </div>
+
+    <script>
+      // ページ読み込み時にブラウザ情報を表示
+      document.addEventListener("DOMContentLoaded", () => {
+        const info = document.createElement("div");
+        info.className = "step";
+        info.innerHTML = `
+                <h3>🌐 現在のブラウザ情報</h3>
+                <ul>
+                    <li><strong>ユーザーエージェント:</strong> ${
+                      navigator.userAgent
+                    }</li>
+                    <li><strong>現在時刻:</strong> ${new Date().toLocaleString(
+                      "ja-JP"
+                    )}</li>
+                    <li><strong>URL:</strong> ${location.href}</li>
+                </ul>
+            `;
+        document.body.appendChild(info);
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Net2Sheet</title>
+    <style>
+      body {
+        font-family: ui-sans-serif, system-ui;
+        padding: 10px;
+      }
+      textarea {
+        width: 100%;
+        height: 120px;
+      }
+      button {
+        margin-right: 8px;
+      }
+      .row {
+        margin: 8px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="row">
+      <label>GAS WebApp URL: <input id="gasUrl" style="width: 60%" /></label>
+      <button id="save">保存</button>
+    </div>
+    <div class="row">
+      <button id="start">収集開始</button>
+      <button id="stop">収集停止</button>
+      <button id="exportCsv">CSVダウンロード</button>
+      <button id="send">スプレッドシートへ送信</button>
+    </div>
+    <div class="row"><strong>収集件数:</strong> <span id="count">0</span></div>
+    <div class="row">
+      <textarea
+        id="preview"
+        placeholder="ファイル名,URL のプレビュー"
+      ></textarea>
+    </div>
+    <script src="panel.js"></script>
+  </body>
+</html>
