@@ -1,5 +1,5 @@
 ---
-globs: manifest.json,devtools.html,devtools.js,service_worker.js
+globs: manifest.json,devtools-page.html,devtools-page.js,service_worker.js
 ---
 
 # Chrome Extension Development Rules (Manifest V3)

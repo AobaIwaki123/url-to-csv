@@ -8,9 +8,13 @@ globs: *.html,*.css
 ```css
 /* Use system font stack for consistent DevTools integration */
 body { 
-  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-family: ui-sans-serif, system-ui;
   padding: 10px;
-  margin: 0;
+}
+
+/* Monospace for CSV preview readability */
+textarea { 
+  font-family: monospace;
 }
 ```
 
@@ -18,16 +22,18 @@ body {
 ```css
 /* Row-based layout for form sections */
 .row { 
-  margin: 8px 0; 
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  margin: 8px 0;
 }
 
-/* Full-width form controls */
-textarea, input[type="text"] { 
+/* Full-width controls with specific sizing */
+textarea { 
   width: 100%; 
-  box-sizing: border-box;
+  height: 120px;
+}
+
+/* Button spacing */
+button {
+  margin-right: 8px;
 }
 ```
 
@@ -38,15 +44,24 @@ textarea, input[type="text"] {
 4. **Data Preview**: Always provide textarea preview of collected data
 
 ## Form Control Standards
-```html
-<!-- Label-input association with inline styling for space efficiency -->
-<label>GAS WebApp URL: <input id="gasUrl" style="width:60%"></label>
+Based on [panel.html](mdc:net2sheet/panel.html) implementation:
 
-<!-- Button groups with consistent spacing -->
+```html
+<!-- Label-input association with inline styling -->
+<label>GAS WebApp URL: <input id="gasUrl" style="width: 60%" /></label>
+<button id="save">保存</button>
+
+<!-- Button groups with consistent Japanese labels -->
 <button id="start">収集開始</button>
 <button id="stop">収集停止</button>
 <button id="exportCsv">CSVダウンロード</button>
 <button id="send">スプレッドシートへ送信</button>
+
+<!-- Status display with real-time updates -->
+<strong>収集件数:</strong> <span id="count">0</span>
+
+<!-- Data preview with helpful placeholder -->
+<textarea id="preview" placeholder="ファイル名,URL のプレビュー"></textarea>
 ```
 
 ## Color & Visual Design

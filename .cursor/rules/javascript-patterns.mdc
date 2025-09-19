@@ -12,15 +12,22 @@ globs: *.js
 
 ## Data Structures & State Management
 ```javascript
-// Use Sets for efficient lookups
-const IMAGE_EXTS = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".avif", ".bmp", ".ico"]);
+// Use Sets for efficient lookups (exact implementation from panel.js)
+const IMAGE_EXTS = new Set([
+  ".png", ".jpg", ".jpeg", ".gif", ".webp", 
+  ".svg", ".avif", ".bmp", ".ico"
+]);
 
-// Array of arrays for CSV-compatible data structure
-let rows = []; // [ [name, url], ... ]
+// Global state variables
+let collecting = false;
+let rows = []; // Array of [name, url] pairs
 
 // Utility functions with clear naming
 const $ = (id) => document.getElementById(id);
-const updateView = () => { /* update UI state */ };
+const updateView = () => {
+  $("count").textContent = String(rows.length);
+  $("preview").value = rows.length > 0 ? generateCSV(rows) : "";
+};
 ```
 
 ## Async/Await Patterns
@@ -80,19 +87,25 @@ const downloadBlob = (content, filename, mimeType = "text/csv") => {
 
 ## URL Processing Best Practices
 ```javascript
-// Safe URL parsing with fallbacks
+// Image extension detection (from panel.js implementation)
+const isImageRequest = (url) => {
+  try {
+    const u = new URL(url);
+    const pathname = u.pathname.toLowerCase();
+    const ext = pathname.slice(pathname.lastIndexOf("."));
+    return IMAGE_EXTS.has(ext);
+  } catch {
+    return false; // Invalid URLs are not images
+  }
+};
+
+// Filename extraction with fallbacks
 const extractFilename = (url) => {
   try {
     return new URL(url).pathname.split("/").pop() || "";
   } catch {
     return url || "";
   }
-};
-
-// Extension detection for image filtering
-const getFileExtension = (pathname) => {
-  const lastDot = pathname.lastIndexOf(".");
-  return lastDot >= 0 ? pathname.slice(lastDot).toLowerCase() : "";
 };
 ```
 

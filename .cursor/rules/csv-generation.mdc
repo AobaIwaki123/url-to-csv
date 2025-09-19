@@ -1,0 +1,145 @@
+---
+globs: panel.js
+---
+
+# CSV Generation Standards for Net2Sheet
+
+## Core CSV Functions
+Based on the implemented functions in [panel.js](mdc:net2sheet/panel.js), follow these patterns:
+
+```javascript
+// Standard CSV escaping for special characters
+const csvEscape = (value) => `"${(value ?? "").replace(/"/g, '""')}"`;
+
+// Row-to-CSV conversion
+const csvRow = (row) => row.map(csvEscape).join(",");
+
+// Complete CSV generation with headers
+const generateCSV = (imageRows, options = {}) => {
+  const { headers = ["ファイル名", "URL"], includeHeaders = true } = options;
+  const rows = [];
+  
+  if (includeHeaders) rows.push(csvRow(headers));
+  imageRows.forEach((row) => rows.push(csvRow(row)));
+  
+  return rows.join("\n");
+};
+```
+
+## Filename Generation Standards
+```javascript
+// Timestamp-based filename with proper formatting
+const generateCSVFilename = (prefix = "network_images", date = new Date()) => {
+  const timestamp = date.toISOString().slice(0, 19).replace(/[T:]/g, "_");
+  return `${prefix}_${timestamp}.csv`;
+};
+
+// Results in: network_images_2025-09-19_14-30-45.csv
+```
+
+## File Download Implementation
+```javascript
+// Blob-based download with proper cleanup
+const downloadCSV = (csvContent, filename) => {
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url); // Important: clean up memory
+};
+```
+
+## CSV Format Specifications
+
+### Headers & Encoding
+- **Default Headers**: `["ファイル名", "URL"]` (Japanese)
+- **Encoding**: UTF-8 with BOM for Excel compatibility
+- **Line Endings**: LF (`\n`) standard
+- **Delimiter**: Comma (`,`)
+
+### Data Structure Requirements
+```javascript
+// Expected data format: Array of arrays
+const rows = [
+  ["image1.jpg", "https://example.com/path/image1.jpg"],
+  ["logo.png", "https://cdn.example.com/assets/logo.png"],
+  ["icon.svg", "https://static.example.com/icons/icon.svg"]
+];
+```
+
+### Escaping Rules (RFC 4180 Compliant)
+1. **All values** wrapped in double quotes
+2. **Internal quotes** doubled: `"` → `""`
+3. **Null/undefined** converted to empty string
+4. **No special handling** for commas or newlines (quotes handle them)
+
+## Error Handling for CSV Operations
+```javascript
+// Data validation before CSV generation
+const validateCSVData = (rows) => {
+  if (!Array.isArray(rows) || rows.length === 0) {
+    throw new Error("CSVに出力するデータがありません");
+  }
+  
+  const validRows = rows.filter(row => Array.isArray(row) && row.length >= 2);
+  if (validRows.length !== rows.length) {
+    console.warn(`${rows.length - validRows.length}件の不正な行をスキップしました`);
+  }
+  
+  return validRows;
+};
+
+// CSV export with comprehensive error handling
+try {
+  const validatedRows = validateCSVData(rows);
+  const csv = generateCSV(validatedRows);
+  const filename = generateCSVFilename();
+  downloadCSV(csv, filename);
+  
+  alert(`CSV出力完了！\nファイル名: ${filename}\n件数: ${validatedRows.length}件`);
+} catch (error) {
+  alert(`CSV出力エラー: ${error.message}`);
+  console.error("CSV export error:", error);
+}
+```
+
+## Customization Options
+```javascript
+// English headers for international use
+const csvEnglish = generateCSV(rows, {
+  headers: ["Filename", "Request URL"],
+  includeHeaders: true
+});
+
+// Headers-only mode for data appending
+const csvDataOnly = generateCSV(rows, {
+  includeHeaders: false
+});
+
+// Custom prefix for specialized exports
+const filename = generateCSVFilename("mobile_images");
+```
+
+## Memory Management Best Practices
+- Always call `URL.revokeObjectURL()` after download completion
+- Use `const` for generated CSV content to prevent accidental modification
+- Consider streaming for large datasets (>1000 rows)
+- Clear blob references explicitly in memory-constrained environments
+
+## Testing & Validation
+```javascript
+// Test CSV generation with edge cases
+const testData = [
+  ["normal.png", "https://example.com/normal.png"],
+  ["with\"quotes.jpg", "https://example.com/with\"quotes.jpg"],
+  ["with,comma.gif", "https://example.com/with,comma.gif"],
+  ["", "https://example.com/empty-filename"],
+  ["no-url.webp", ""]
+];
+
+// Should produce properly escaped CSV output
+const testCSV = generateCSV(testData);
+console.log("Test CSV:", testCSV);
+```

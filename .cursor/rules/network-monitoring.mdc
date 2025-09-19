@@ -1,0 +1,231 @@
+---
+globs: panel.js,devtools-page.js
+---
+
+# DevTools Network Monitoring Patterns
+
+## Chrome DevTools Network API
+Core patterns for monitoring network requests in DevTools extensions:
+
+```javascript
+// Primary network request monitoring
+chrome.devtools.network.onRequestFinished.addListener((req) => {
+  if (!collecting) return; // Guard clause for inactive state
+  
+  // Extract URL and filename safely
+  const url = req.request?.url || "";
+  const name = extractFilename(url);
+  
+  // Process only image requests
+  if (isImageRequest(url)) {
+    rows.push([name, url]);
+    updateView();
+  }
+});
+
+// Navigation event handling (optional data reset)
+chrome.devtools.network.onNavigated.addListener(() => {
+  // Optionally clear collected data on page navigation
+  // rows = [];
+  // updateView();
+});
+```
+
+## Image Detection Logic
+Efficient image filtering based on URL analysis:
+
+```javascript
+// Image extension set for O(1) lookup performance
+const IMAGE_EXTS = new Set([
+  ".png", ".jpg", ".jpeg", ".gif", ".webp", 
+  ".svg", ".avif", ".bmp", ".ico"
+]);
+
+// Safe URL parsing with fallback handling
+const isImageRequest = (url) => {
+  try {
+    const urlObj = new URL(url);
+    const pathname = urlObj.pathname.toLowerCase();
+    const ext = pathname.slice(pathname.lastIndexOf("."));
+    return IMAGE_EXTS.has(ext);
+  } catch {
+    return false; // Invalid URLs are not images
+  }
+};
+
+// Filename extraction with fallbacks
+const extractFilename = (url) => {
+  try {
+    const pathname = new URL(url).pathname;
+    return pathname.split("/").pop() || "";
+  } catch {
+    return url || ""; // Fallback to full URL or empty string
+  }
+};
+```
+
+## State Management for Collection
+```javascript
+// Global collection state
+let collecting = false;
+let rows = []; // Array of [filename, url] pairs
+
+// Collection control functions
+const startCollection = () => {
+  collecting = true;
+  alert("収集を開始しました。ページを再読み込みしてください。");
+};
+
+const stopCollection = () => {
+  collecting = false;
+  alert(`収集を停止しました。収集件数: ${rows.length}件`);
+};
+
+// Real-time UI updates
+const updateView = () => {
+  document.getElementById("count").textContent = String(rows.length);
+  
+  // Update preview with CSV format
+  if (rows.length > 0) {
+    document.getElementById("preview").value = generateCSV(rows);
+  } else {
+    document.getElementById("preview").value = "";
+  }
+};
+```
+
+## Request Data Structure Analysis
+Understanding the DevTools request object:
+
+```javascript
+// Available request properties
+chrome.devtools.network.onRequestFinished.addListener((req) => {
+  // req.request properties:
+  // - url: string (full request URL)
+  // - method: string (GET, POST, etc.)
+  // - headers: object (request headers)
+  // - postData: object (for POST requests)
+  
+  // req.response properties:
+  // - status: number (HTTP status code)
+  // - statusText: string
+  // - headers: object (response headers)
+  // - content: object (response body, requires getContent())
+  
+  // For image collection, primarily use req.request.url
+  const url = req.request.url;
+  const method = req.request.method; // Usually GET for images
+  const status = req.response?.status; // 200 for successful loads
+});
+```
+
+## Performance Optimization
+```javascript
+// Efficient filtering to avoid unnecessary processing
+chrome.devtools.network.onRequestFinished.addListener((req) => {
+  // Early returns for performance
+  if (!collecting) return;
+  if (!req.request?.url) return;
+  if (req.request.method !== "GET") return; // Images typically use GET
+  
+  // Quick extension check before full URL parsing
+  const url = req.request.url;
+  const hasImageExt = IMAGE_EXTS.some(ext => 
+    url.toLowerCase().includes(ext)
+  );
+  if (!hasImageExt) return;
+  
+  // Full validation only for potential images
+  if (isImageRequest(url)) {
+    const name = extractFilename(url);
+    rows.push([name, url]);
+    
+    // Batch UI updates for better performance
+    requestAnimationFrame(updateView);
+  }
+});
+```
+
+## Error Handling & Edge Cases
+```javascript
+// Robust error handling for network monitoring
+const handleNetworkRequest = (req) => {
+  try {
+    // Validate request structure
+    if (!req || !req.request) {
+      console.warn("Invalid request object:", req);
+      return;
+    }
+    
+    const url = req.request.url;
+    if (!url || typeof url !== "string") {
+      console.warn("Invalid URL in request:", url);
+      return;
+    }
+    
+    // Process valid image requests
+    if (isImageRequest(url)) {
+      const name = extractFilename(url);
+      
+      // Validate extracted data before storage
+      if (name || url) {
+        rows.push([name, url]);
+        updateView();
+      }
+    }
+  } catch (error) {
+    console.error("Error processing network request:", error);
+    // Continue operation - don't break collection for single errors
+  }
+};
+
+chrome.devtools.network.onRequestFinished.addListener(handleNetworkRequest);
+```
+
+## Testing Network Monitoring
+```javascript
+// Test with various URL patterns
+const testUrls = [
+  "https://example.com/image.png",                    // Standard image
+  "https://cdn.example.com/assets/logo.jpg?v=123",   // With query params
+  "https://images.example.com/sprite.svg#icon1",     // With fragment
+  "https://example.com/api/data.json",               // Non-image (should skip)
+  "https://example.com/path/no-extension",           // No extension (should skip)
+  "invalid-url",                                      // Invalid URL (should skip)
+];
+
+// Manual testing function
+const testImageDetection = () => {
+  testUrls.forEach(url => {
+    const isImage = isImageRequest(url);
+    const filename = extractFilename(url);
+    console.log(`URL: ${url} | Image: ${isImage} | Filename: ${filename}`);
+  });
+};
+```
+
+## Memory Management
+```javascript
+// Prevent memory leaks in long-running sessions
+const MAX_ROWS = 10000; // Limit for large collections
+
+chrome.devtools.network.onRequestFinished.addListener((req) => {
+  if (!collecting) return;
+  
+  // Memory management for large datasets
+  if (rows.length >= MAX_ROWS) {
+    console.warn(`最大収集件数 (${MAX_ROWS}) に達しました。古いデータを削除します。`);
+    rows = rows.slice(-MAX_ROWS + 1000); // Keep recent 9000 items
+  }
+  
+  // Process request...
+});
+
+// Optional: Clear data on navigation to prevent accumulation
+chrome.devtools.network.onNavigated.addListener(() => {
+  if (confirm("ページが変更されました。収集データをリセットしますか？")) {
+    rows = [];
+    updateView();
+  }
+});
+```
