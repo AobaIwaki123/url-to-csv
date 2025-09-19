@@ -1,17 +1,18 @@
-# Net2Sheet - Chrome拡張機能
-
-Chrome DevToolsで画像リクエストを収集し、CSV形式でエクスポートするChrome拡張機能です。
+# Net2Sheet - Chrome拡張機能 & 画像チェッカー - Web App
 
 ## 📋 概要
+
+1. Net2Sheet: Chrome DevToolsで画像リクエストを収集し、CSV形式でエクスポートするChrome拡張機能
+2. 画像チェッカー: 取得したCSVファイルの内容を視覚的に確認・編集できるWebツール
+
+## Net2Sheet
 
 Net2SheetはWeb開発者やコンテンツ管理者向けの拡張機能で、ブラウザのネットワーク通信を監視して画像リソースの情報を効率的に収集・分析できます。
 
 ### ✨ 主な機能
 
-- 📡 **リアルタイム画像監視**: DevToolsでネットワーク通信を監視し、画像リクエストを自動収集
 - 📁 **多様な画像形式対応**: PNG, JPEG, GIF, WebP, SVG, AVIF, BMP, ICO
 - 📊 **CSV出力**: 収集したデータをCSV形式でダウンロード
-- 🔄 **GAS連携**: Google Apps Script WebAppとの連携でスプレッドシートに直接送信
 - 🎯 **ユーザーフレンドリー**: 直感的なDevToolsパネルUI
 
 ## 🚀 インストール方法
@@ -43,33 +44,12 @@ cd net2sheet
 5. **データ確認**: プレビューエリアで収集されたデータを確認
 6. **CSV出力**: 「CSVダウンロード」ボタンでファイルをダウンロード
 
-### 詳細手順
-
-#### 🎯 画像収集
-```
-1. 「収集開始」ボタンをクリック
-   → アラート: "収集を開始しました。ページを再読み込みしてください。"
-
-2. ページを再読み込み（F5）または画像を含むページに移動
-   → リアルタイムで「収集件数」が更新される
-   → プレビューエリアにCSV形式のデータが表示される
-
-3. 必要に応じて「収集停止」ボタンで監視を停止
-```
-
-#### 📊 CSV出力
-```
-1. 「CSVダウンロード」ボタンをクリック
-2. ファイルが自動ダウンロードされる
-   ファイル名例: network_images_2025-09-19_14-30-45.csv
-```
-
 ## 📄 CSV出力形式
 
 ### 基本フォーマット
 
 ```csv
-"ファイル名","URL"
+"name","url"
 "image1.jpg","https://example.com/images/image1.jpg"
 "logo.png","https://example.com/assets/logo.png"
 "icon.svg","https://example.com/icons/icon.svg"
@@ -90,8 +70,8 @@ cd net2sheet
 #### ✅ ヘッダー設定
 | 列名 | 内容 | 例 |
 |------|------|-----|
-| ファイル名 | URLのpathから抽出されたファイル名 | `image.jpg`, `logo.png` |
-| URL | 完全なリクエストURL | `https://example.com/path/image.jpg` |
+| name | URLのpathから抽出されたファイル名 | `image.jpg`, `logo.png` |
+| url | 完全なリクエストURL | `https://example.com/path/image.jpg` |
 
 #### ✅ ファイル名規則
 ```
@@ -152,17 +132,6 @@ const IMAGE_EXTS = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".
 
 ## 🛠️ 技術仕様
 
-### アーキテクチャ
-
-```
-Chrome Extension (Manifest V3)
-├─ DevTools Extension
-│  ├─ Panel UI (HTML/CSS/JS)
-│  └─ Network Monitoring
-├─ Background Service Worker
-└─ Local Storage (Settings)
-```
-
 ### ファイル構成
 
 ```
@@ -185,28 +154,6 @@ net2sheet/
 | `chrome.storage.local` | 設定の永続化 |
 | `Blob API` | CSVファイル生成 |
 | `URL.createObjectURL` | ダウンロード処理 |
-
-## 🔄 GAS連携（オプション）
-
-Google Apps Scriptとの連携により、収集したデータを直接スプレッドシートに送信できます。
-
-### GAS WebApp設定手順
-
-1. **Google Apps Scriptプロジェクト作成**
-2. **WebAppコードをデプロイ**（詳細は `PLAN.md` を参照）
-3. **WebApp URLを拡張機能に設定**
-4. **「スプレッドシートへ送信」ボタンで送信**
-
-### 送信データ形式
-
-```json
-{
-  "rows": [
-    ["image1.jpg", "https://example.com/images/image1.jpg"],
-    ["logo.png", "https://example.com/assets/logo.png"]
-  ]
-}
-```
 
 ## 🔍 CSV Image Checker
 
@@ -240,7 +187,7 @@ Net2Sheetで生成されたCSVファイルの内容を視覚的に確認・編�
 Net2Sheet拡張機能が出力する以下の形式に対応：
 
 ```csv
-"ファイル名","URL"
+"name","url"
 "image1.jpg","https://example.com/images/image1.jpg"
 "logo.png","https://example.com/assets/logo.png"
 ```
