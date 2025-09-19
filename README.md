@@ -186,7 +186,7 @@ net2sheet/
 | `Blob API` | CSVファイル生成 |
 | `URL.createObjectURL` | ダウンロード処理 |
 
-## 🔄 GAS連携（オプション）
+## 🔄 GAS連携（オプション） / Cloud Run 連携
 
 Google Apps Scriptとの連携により、収集したデータを直接スプレッドシートに送信できます。
 
@@ -211,3 +211,78 @@ Google Apps Scriptとの連携により、収集したデータを直接スプ�
 ---
 
 **Net2Sheet** - Chromeの開発者向けネットワーク監視・画像収集ツール
+
+---
+
+## ☁️ Cloud Run バックエンド + Cloud Run Job（スプレッドシート連携）
+
+Chrome拡張で生成したCSVをCloud Runサービスへ送信し、GCSへ保存後、Cloud Run Jobでスプレッドシートに追記します。認証は `IMPLEMENTATION-PLAN.md` のJWT方式に準拠します。
+
+### 前提
+- gcloud CLI / Docker が利用可能
+- プロジェクトに対し以下のAPIが有効
+  - Cloud Run, Cloud Build, Cloud Storage, Google Sheets API
+
+### デプロイ手順
+
+#### **方法1: 自動セットアップ（推奨）**
+
+```bash
+cd backend
+
+# 1. 対話式セットアップで環境変数を設定
+./setup.sh
+
+# 2. Google Cloud APIの有効化
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com storage.googleapis.com sheets.googleapis.com
+
+# 3. Cloud Storageバケット作成
+gsutil mb -l ${REGION} gs://${BUCKET}  # BUCKETは.envで設定された値
+
+# 4. デプロイ実行
+./deploy.sh
+```
+
+#### **方法2: 手動設定**
+
+```bash
+cd backend
+
+# 1. 環境変数ファイル作成
+cp example.env .env
+# .envファイルを編集して実際の値を設定
+
+# 2. 以下は上記の方法1と同じ
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com storage.googleapis.com sheets.googleapis.com
+gsutil mb -l ${REGION} gs://${BUCKET}
+./deploy.sh
+```
+
+#### **環境変数の説明**
+
+| 変数名 | 説明 | 例 |
+|--------|------|-----|
+| `PROJECT_ID` | Google Cloud プロジェクトID | `my-project-123` |
+| `REGION` | デプロイ先リージョン | `us-central1` |
+| `BUCKET` | Cloud Storage バケット名 | `net2sheet-uploads-20250119` |
+| `SHEET_ID` | Google Sheets の ID | `1BxiMVs0XRA5nFMd...` |
+| `SHEET_RANGE` | 書き込み先のセル範囲 | `Sheet1!A1` |
+| `JWT_SECRET` | JWT認証用の秘密鍵 | `your-secret-key` |
+
+デプロイ後、Cloud RunサービスのURLが払い出されます（例: `https://net2sheet-upload-xxxxx-uc.a.run.app`）。
+
+### 拡張からの送信例
+
+```javascript
+// token は IMPLEMENTATION-PLAN.md のフローで取得したJWT
+await fetch('https://<SERVICE_URL>/upload', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'text/csv',
+  },
+  body: csvString, // 生成したCSV文字列
+});
+```
+
+サービスはCSVを `gs://${BUCKET}/uploads/` に保存し、その後Cloud Run Jobを起動してGoogle Sheetsへ追記します。

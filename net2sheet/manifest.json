@@ -1,11 +1,12 @@
 {
   "manifest_version": 3,
   "name": "Net2Sheet",
-  "version": "0.1.0",
-  "description": "DevToolsのNetworkから画像リクエスト(name, url)を収集し、CSV化&スプレッドシートに送信",
+  "version": "0.2.0",
+  "description": "DevToolsのNetworkから画像リクエスト(name, url)を収集し、CSV化&Cloud Run経由でスプレッドシートに送信",
   "permissions": ["storage", "scripting"],
   "host_permissions": ["<all_urls>"],
   "background": { "service_worker": "service_worker.js" },
   "devtools_page": "devtools-page.html",
+  "options_page": "options.html",
   "icons": { "16": "icon16.png", "48": "icon48.png", "128": "icon128.png" }
 }

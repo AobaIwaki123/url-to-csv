@@ -22,14 +22,15 @@
   </head>
   <body>
     <div class="row">
-      <label>GAS WebApp URL: <input id="gasUrl" style="width: 60%" /></label>
-      <button id="save">保存</button>
+      <strong>Cloud Run 認証:</strong>
+      <span id="authStatus">未確認</span>
+      <button id="openSettings">設定</button>
     </div>
     <div class="row">
       <button id="start">収集開始</button>
       <button id="stop">収集停止</button>
       <button id="exportCsv">CSVダウンロード</button>
-      <button id="send">スプレッドシートへ送信</button>
+      <button id="send">Cloud Run経由でアップロード</button>
     </div>
     <div class="row"><strong>収集件数:</strong> <span id="count">0</span></div>
     <div class="row">
@@ -38,6 +39,19 @@
         placeholder="ファイル名,URL のプレビュー"
       ></textarea>
     </div>
+
+    <!-- Legacy GAS support (hidden by default) -->
+    <details style="margin-top: 15px">
+      <summary><small>従来のGAS連携（レガシー）</small></summary>
+      <div class="row">
+        <label>GAS WebApp URL: <input id="gasUrl" style="width: 60%" /></label>
+        <button id="save">保存</button>
+      </div>
+      <div class="row">
+        <button id="sendGas">GAS経由で送信</button>
+      </div>
+    </details>
+
     <script src="panel.js"></script>
   </body>
 </html>
