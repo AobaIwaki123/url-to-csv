@@ -1,9 +1,10 @@
-# Net2Sheet - Chrome拡張機能 & 画像チェッカー - Web App
+# Net2Sheet - 画像URLスクレイパー
 
 ## 📋 概要
 
-1. Net2Sheet: Chrome DevToolsで画像リクエストを収集し、CSV形式でエクスポートするChrome拡張機能
-2. 画像チェッカー: 取得したCSVファイルの内容を視覚的に確認・編集できるWebツール
+1. Chrome Extension: Chrome DevToolsで画像リクエストを収集し、CSV形式でエクスポートするChrome拡張機能
+2. CSV Checker: 取得したCSVファイルの内容を視覚的に確認・編集できるWebツール
+3. URL to CSV: 画像URLをCSV形式でエクスポートするWebツール (Chrome 拡張機能とCSV Checkerの機能を統合したアプリケーション)
 
 ## Net2Sheet
 
