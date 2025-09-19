@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>URL to CSV - URL画像抽出ツール</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+          sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      header {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        color: white;
+        padding: 2rem 0;
+        text-align: center;
+        margin-bottom: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+      }
+
+      .url-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+      }
+
+      .url-input-group {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+
+      .url-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+      }
+
+      .url-input:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+      }
+
+      .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 1rem;
+      }
+
+      .btn-primary {
+        background: linear-gradient(45deg, #4f46e5, #3b82f6);
+        color: white;
+      }
+
+      .btn-success {
+        background: linear-gradient(45deg, #10b981, #059669);
+        color: white;
+      }
+
+      .btn-warning {
+        background: linear-gradient(45deg, #f59e0b, #d97706);
+        color: white;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .options-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      .option-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+      }
+
+      .controls {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        display: none;
+      }
+
+      .controls.show {
+        display: block;
+      }
+
+      .stats {
+        display: flex;
+        gap: 2rem;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .stat-number {
+        font-weight: bold;
+        font-size: 1.3rem;
+        color: #4f46e5;
+      }
+
+      .button-group {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+        font-size: 1.2rem;
+        color: #4f46e5;
+      }
+
+      .loading.show {
+        display: block;
+      }
+
+      .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #4f46e5;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 10px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .image-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+      }
+
+      .image-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .image-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      .image-card.excluded {
+        opacity: 0.6;
+        background: #f8f8f8;
+      }
+
+      .image-preview {
+        width: 100%;
+        height: 200px;
+        object-fit: contain;
+        background: #f0f0f0;
+        border-bottom: 1px solid #eee;
+      }
+
+      .image-preview.error {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-size: 0.9rem;
+        background: #f8f8f8;
+      }
+
+      .image-info {
+        padding: 1rem;
+      }
+
+      .image-name-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+        transition: border-color 0.3s ease;
+      }
+
+      .image-name-input:focus {
+        outline: none;
+        border-color: #4f46e5;
+      }
+
+      .image-url {
+        font-size: 0.8rem;
+        color: #666;
+        word-break: break-all;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+      }
+
+      .exclude-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: bold;
+      }
+
+      .exclude-checkbox input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+      }
+
+      .no-data {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #999;
+        font-size: 1.2rem;
+      }
+
+      .error-message {
+        background: #fef2f2;
+        color: #dc2626;
+        padding: 1rem;
+        border-radius: 5px;
+        margin: 1rem 0;
+        border-left: 4px solid #dc2626;
+      }
+
+      .success-message {
+        background: #f0fdf4;
+        color: #16a34a;
+        padding: 1rem;
+        border-radius: 5px;
+        margin: 1rem 0;
+        border-left: 4px solid #16a34a;
+      }
+
+      .warning-message {
+        background: #fffbeb;
+        color: #d97706;
+        padding: 1rem;
+        border-radius: 5px;
+        margin: 1rem 0;
+        border-left: 4px solid #d97706;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 10px;
+        }
+
+        h1 {
+          font-size: 2rem;
+        }
+
+        .url-input-group {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .stats {
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .button-group {
+          flex-direction: column;
+        }
+
+        .image-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>🔗 URL to CSV</h1>
+        <p class="subtitle">WebページのURL から画像一覧を抽出してCSVを生成</p>
+      </header>
+
+      <div class="url-section">
+        <h2>🌐 URL入力</h2>
+        <p style="margin-bottom: 1rem; color: #666">
+          画像を抽出したいWebページのURLを入力してください。
+        </p>
+
+        <div class="url-input-group">
+          <input
+            type="url"
+            id="urlInput"
+            class="url-input"
+            placeholder="https://example.com/page"
+            aria-label="WebページのURL"
+          />
+          <button id="extractBtn" class="btn btn-primary">🔍 画像を抽出</button>
+        </div>
+
+        <div class="options-section">
+          <div class="option-group">
+            <input
+              type="checkbox"
+              id="includeExternal"
+              class="checkbox"
+              checked
+            />
+            <label for="includeExternal">外部ドメインの画像も含める</label>
+          </div>
+          <div class="option-group">
+            <input type="checkbox" id="includeDataUrls" class="checkbox" />
+            <label for="includeDataUrls">Data URLsも含める</label>
+          </div>
+          <div class="option-group">
+            <input type="checkbox" id="includeSvg" class="checkbox" />
+            <label for="includeSvg">SVG画像も含める</label>
+          </div>
+          <div class="option-group">
+            <input type="checkbox" id="includeGif" class="checkbox" />
+            <label for="includeGif">GIF画像も含める</label>
+          </div>
+          <div class="option-group">
+            <input
+              type="checkbox"
+              id="includeBackground"
+              class="checkbox"
+              checked
+            />
+            <label for="includeBackground">背景画像も含める</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        画像を抽出中...
+      </div>
+
+      <div class="controls" id="controls">
+        <div class="stats">
+          <div class="stat-item">
+            <span>📊 総数:</span>
+            <span class="stat-number" id="totalCount">0</span>
+          </div>
+          <div class="stat-item">
+            <span>✅ 有効:</span>
+            <span class="stat-number" id="validCount">0</span>
+          </div>
+          <div class="stat-item">
+            <span>❌ 除外:</span>
+            <span class="stat-number" id="excludedCount">0</span>
+          </div>
+        </div>
+        <div class="button-group">
+          <button class="btn btn-warning" id="toggleExcluded">
+            👁️ 除外画像を隠す/表示
+          </button>
+          <button class="btn btn-success" id="exportCsv">
+            💾 CSVをダウンロード
+          </button>
+        </div>
+      </div>
+
+      <div class="no-data" id="noData">
+        🌐 URLを入力して「画像を抽出」ボタンを押すと、画像一覧が表示されます
+      </div>
+
+      <div class="image-grid" id="imageGrid"></div>
+    </div>
+
+    <script>
+      // グローバル変数
+      let imageData = [];
+      let showExcluded = true;
+      let currentUrl = "";
+
+      // DOM要素の取得
+      const urlInput = document.getElementById("urlInput");
+      const extractBtn = document.getElementById("extractBtn");
+      const loading = document.getElementById("loading");
+      const controls = document.getElementById("controls");
+      const noData = document.getElementById("noData");
+      const imageGrid = document.getElementById("imageGrid");
+      const totalCount = document.getElementById("totalCount");
+      const validCount = document.getElementById("validCount");
+      const excludedCount = document.getElementById("excludedCount");
+      const toggleExcludedBtn = document.getElementById("toggleExcluded");
+      const exportCsvBtn = document.getElementById("exportCsv");
+
+      // オプション要素
+      const includeExternal = document.getElementById("includeExternal");
+      const includeDataUrls = document.getElementById("includeDataUrls");
+      const includeSvg = document.getElementById("includeSvg");
+      const includeBackground = document.getElementById("includeBackground");
+
+      // イベントリスナー
+      extractBtn.addEventListener("click", handleUrlExtraction);
+      urlInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+          handleUrlExtraction();
+        }
+      });
+      toggleExcludedBtn.addEventListener("click", toggleExcludedImages);
+      exportCsvBtn.addEventListener("click", exportModifiedCsv);
+
+      /**
+       * URL抽出処理のメイン関数
+       */
+      async function handleUrlExtraction() {
+        const url = urlInput.value.trim();
+
+        if (!url) {
+          showError("URLを入力してください。");
+          return;
+        }
+
+        if (!isValidUrl(url)) {
+          showError("有効なURLを入力してください。");
+          return;
+        }
+
+        try {
+          showLoading(true);
+          showControls(false);
+          imageGrid.innerHTML = "";
+          currentUrl = url;
+
+          // 警告メッセージを表示
+          showWarning(
+            "⚠️ CORS制限により、一部のWebサイトからは画像を抽出できない場合があります。"
+          );
+
+          // プロキシサービスを使用してコンテンツを取得
+          const content = await fetchPageContent(url);
+          const extractedImages = extractImagesFromContent(content, url);
+
+          if (extractedImages.length === 0) {
+            showError(
+              "このページから画像を抽出できませんでした。CORS制限またはページの構造が原因の可能性があります。"
+            );
+            return;
+          }
+
+          imageData = extractedImages.map((img, index) => ({
+            id: index,
+            originalName: img.name,
+            editedName: img.name,
+            url: img.url,
+            excluded: false,
+            alt: img.alt || "",
+            size: img.size || "unknown",
+          }));
+
+          await renderImages();
+          updateStats();
+          showControls(true);
+          showSuccess(`${imageData.length}件の画像を抽出しました。`);
+        } catch (error) {
+          console.error("抽出エラー:", error);
+          showError(`画像抽出エラー: ${error.message}`);
+        } finally {
+          showLoading(false);
+        }
+      }
+
+      /**
+       * ページコンテンツの取得（CORS対策）
+       */
+      async function fetchPageContent(url) {
+        // 複数のプロキシサービスを試行
+        const proxyServices = [
+          // AllOrigins (HTTPS対応)
+          `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+          // CORS Anywhere (バックアップ)
+          `https://cors-anywhere.herokuapp.com/${url}`,
+          // 直接アクセス（CORS制限がない場合）
+          url,
+        ];
+
+        let lastError;
+
+        for (const proxyUrl of proxyServices) {
+          try {
+            console.log(`Trying to fetch from: ${proxyUrl}`);
+
+            const response = await fetch(proxyUrl, {
+              method: "GET",
+              headers: {
+                Accept:
+                  "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "User-Agent": "Mozilla/5.0 (compatible; URL-to-CSV-Tool)",
+              },
+            });
+
+            if (!response.ok) {
+              throw new Error(
+                `HTTP ${response.status}: ${response.statusText}`
+              );
+            }
+
+            const data = await response.text();
+
+            // AllOrigins の場合、レスポンスがJSONでラップされている
+            if (proxyUrl.includes("allorigins.win")) {
+              const jsonResponse = JSON.parse(data);
+              return jsonResponse.contents;
+            }
+
+            return data;
+          } catch (error) {
+            console.error(`Failed to fetch via ${proxyUrl}:`, error);
+            lastError = error;
+            continue;
+          }
+        }
+
+        throw new Error(
+          `すべてのプロキシサービスでアクセスに失敗しました: ${lastError.message}`
+        );
+      }
+
+      /**
+       * HTMLコンテンツから画像を抽出
+       */
+      function extractImagesFromContent(htmlContent, baseUrl) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlContent, "text/html");
+        const images = [];
+        const seenUrls = new Set(); // 重複を避けるため
+
+        // img要素を抽出
+        const imgElements = doc.querySelectorAll("img");
+        imgElements.forEach((img) => {
+          const src = img.getAttribute("src");
+          if (src && shouldIncludeImage(src)) {
+            const absoluteUrl = resolveUrl(src, baseUrl);
+            if (absoluteUrl && !seenUrls.has(absoluteUrl)) {
+              seenUrls.add(absoluteUrl);
+              images.push({
+                name: extractFileNameFromUrl(absoluteUrl),
+                url: absoluteUrl,
+                alt: img.getAttribute("alt") || "",
+                type: "img",
+              });
+            }
+          }
+        });
+
+        // picture要素内のsource要素を抽出
+        const pictureElements = doc.querySelectorAll("picture source");
+        pictureElements.forEach((source) => {
+          const srcset = source.getAttribute("srcset");
+          if (srcset) {
+            const urls = parseSrcset(srcset);
+            urls.forEach((src) => {
+              if (shouldIncludeImage(src)) {
+                const absoluteUrl = resolveUrl(src, baseUrl);
+                if (absoluteUrl && !seenUrls.has(absoluteUrl)) {
+                  seenUrls.add(absoluteUrl);
+                  images.push({
+                    name: extractFileNameFromUrl(absoluteUrl),
+                    url: absoluteUrl,
+                    alt: "",
+                    type: "picture",
+                  });
+                }
+              }
+            });
+          }
+        });
+
+        // 背景画像の抽出（オプション）
+        if (includeBackground.checked) {
+          const elementsWithBg = doc.querySelectorAll("*");
+          elementsWithBg.forEach((el) => {
+            if (el.style && el.style.backgroundImage) {
+              const bgImage = el.style.backgroundImage;
+              const urlMatch = bgImage.match(/url\(['"]?([^'"]+)['"]?\)/);
+              if (urlMatch && urlMatch[1]) {
+                const src = urlMatch[1];
+                if (shouldIncludeImage(src)) {
+                  const absoluteUrl = resolveUrl(src, baseUrl);
+                  if (absoluteUrl && !seenUrls.has(absoluteUrl)) {
+                    seenUrls.add(absoluteUrl);
+                    images.push({
+                      name: extractFileNameFromUrl(absoluteUrl),
+                      url: absoluteUrl,
+                      alt: "",
+                      type: "background",
+                    });
+                  }
+                }
+              }
+            }
+          });
+        }
+
+        return images;
+      }
+
+      /**
+       * 画像を含めるかどうかの判定
+       */
+      function shouldIncludeImage(src) {
+        if (!src) return false;
+
+        // Data URLs
+        if (!includeDataUrls.checked && src.startsWith("data:")) {
+          return false;
+        }
+
+        // 外部ドメイン
+        if (!includeExternal.checked) {
+          try {
+            const srcUrl = new URL(src);
+            const baseUrlObj = new URL(currentUrl);
+            if (srcUrl.hostname !== baseUrlObj.hostname) {
+              return false;
+            }
+          } catch (e) {
+            // URL解析に失敗した場合は含める
+          }
+        }
+
+        const lowerSrc = src.toLowerCase();
+
+        // SVGファイル
+        if (includeSvg.checked && lowerSrc.includes("svg")) {
+          return false;
+        }
+
+        // GIFファイル
+        if (includeGif.checked && lowerSrc.includes("gif")) {
+          return false;
+        }
+
+        // 一般的な画像形式をチェック（SVG以外）
+        const imageExtensions = [
+          ".jpg",
+          ".jpeg",
+          ".png",
+          ".webp",
+          ".bmp",
+          ".ico",
+          ".avif",
+        ];
+        return (
+          imageExtensions.some((ext) => lowerSrc.includes(ext)) ||
+          lowerSrc.includes("image")
+        );
+      }
+
+      /**
+       * 相対URLを絶対URLに変換
+       */
+      function resolveUrl(url, baseUrl) {
+        try {
+          return new URL(url, baseUrl).href;
+        } catch (e) {
+          console.warn("URL解決に失敗:", url, baseUrl);
+          return null;
+        }
+      }
+
+      /**
+       * srcsetから複数のURLを抽出
+       */
+      function parseSrcset(srcset) {
+        return srcset
+          .split(",")
+          .map((entry) => entry.trim().split(/\s+/)[0])
+          .filter((url) => url);
+      }
+
+      /**
+       * URLからファイル名を抽出
+       */
+      function extractFileNameFromUrl(url) {
+        try {
+          const urlObj = new URL(url);
+          const pathname = urlObj.pathname;
+          const fileName = pathname.split("/").pop();
+
+          if (fileName && fileName.includes(".")) {
+            return fileName;
+          }
+
+          // ファイル名が取得できない場合は、パスの最後の部分を使用
+          return (
+            pathname
+              .split("/")
+              .filter((part) => part)
+              .pop() || "image"
+          );
+        } catch (e) {
+          return "image";
+        }
+      }
+
+      /**
+       * URLの妥当性をチェック
+       */
+      function isValidUrl(string) {
+        try {
+          const url = new URL(string);
+          return url.protocol === "http:" || url.protocol === "https:";
+        } catch (_) {
+          return false;
+        }
+      }
+
+      /**
+       * 画像一覧表示
+       */
+      async function renderImages() {
+        imageGrid.innerHTML = "";
+
+        const visibleImages = imageData.filter(
+          (img) => showExcluded || !img.excluded
+        );
+
+        if (visibleImages.length === 0) {
+          imageGrid.innerHTML =
+            '<div class="no-data">表示する画像がありません</div>';
+          return;
+        }
+
+        for (const img of visibleImages) {
+          const card = createImageCard(img);
+          imageGrid.appendChild(card);
+        }
+      }
+
+      /**
+       * 画像カード作成
+       */
+      function createImageCard(img) {
+        const card = document.createElement("div");
+        card.className = `image-card ${img.excluded ? "excluded" : ""}`;
+        card.dataset.id = img.id;
+
+        card.innerHTML = `
+          <div class="image-preview-container">
+            <img class="image-preview" src="${img.url}" alt="${escapeHtml(
+          img.editedName
+        )}"
+                 onerror="this.className='image-preview error'; this.innerHTML='🖼️ 画像を読み込めません';" />
+          </div>
+          <div class="image-info">
+            <input type="text" class="image-name-input" value="${escapeHtml(
+              img.editedName
+            )}" 
+                   placeholder="画像名を入力..." data-id="${img.id}" />
+            <div class="image-url">${escapeHtml(img.url)}</div>
+            <label class="exclude-checkbox">
+              <input type="checkbox" ${
+                img.excluded ? "checked" : ""
+              } data-id="${img.id}" />
+              🚫 この画像を除外する
+            </label>
+          </div>
+        `;
+
+        // イベントリスナー追加
+        const nameInput = card.querySelector(".image-name-input");
+        const excludeCheckbox = card.querySelector('input[type="checkbox"]');
+
+        nameInput.addEventListener("input", (e) => {
+          const imgId = parseInt(e.target.dataset.id);
+          const imgItem = imageData.find((item) => item.id === imgId);
+          if (imgItem) {
+            imgItem.editedName = e.target.value;
+          }
+        });
+
+        excludeCheckbox.addEventListener("change", (e) => {
+          const imgId = parseInt(e.target.dataset.id);
+          const imgItem = imageData.find((item) => item.id === imgId);
+          if (imgItem) {
+            imgItem.excluded = e.target.checked;
+            card.className = `image-card ${imgItem.excluded ? "excluded" : ""}`;
+            updateStats();
+          }
+        });
+
+        return card;
+      }
+
+      /**
+       * 統計情報更新
+       */
+      function updateStats() {
+        const total = imageData.length;
+        const excluded = imageData.filter((img) => img.excluded).length;
+        const valid = total - excluded;
+
+        totalCount.textContent = total;
+        validCount.textContent = valid;
+        excludedCount.textContent = excluded;
+      }
+
+      /**
+       * 除外画像の表示/非表示切り替え
+       */
+      async function toggleExcludedImages() {
+        showExcluded = !showExcluded;
+        toggleExcludedBtn.textContent = showExcluded
+          ? "👁️ 除外画像を隠す"
+          : "👁️ 除外画像を表示";
+        await renderImages();
+      }
+
+      /**
+       * CSV出力
+       */
+      function exportModifiedCsv() {
+        const validImages = imageData.filter((img) => !img.excluded);
+
+        if (validImages.length === 0) {
+          showError("出力する画像データがありません。");
+          return;
+        }
+
+        try {
+          const csvContent = generateCSV(validImages);
+          const filename = generateCSVFilename("extracted_images");
+
+          downloadCSV(csvContent, filename);
+          showSuccess(
+            `CSVを出力しました。\nファイル名: ${filename}\n件数: ${validImages.length}件`
+          );
+        } catch (error) {
+          showError(`CSV出力エラー: ${error.message}`);
+        }
+      }
+
+      /**
+       * CSV生成
+       */
+      function generateCSV(images) {
+        const headers = ["ファイル名", "URL"];
+        const rows = [csvRow(headers)];
+
+        images.forEach((img) => {
+          rows.push(csvRow([img.editedName, img.url]));
+        });
+
+        return rows.join("\n");
+      }
+
+      /**
+       * CSV行生成（クォートエスケープ対応）
+       */
+      function csvRow(row) {
+        return row
+          .map((value) => `"${(value || "").replace(/"/g, '""')}"`)
+          .join(",");
+      }
+
+      /**
+       * CSVファイル名生成
+       */
+      function generateCSVFilename(prefix = "extracted_images") {
+        const now = new Date();
+        const timestamp = now.toISOString().slice(0, 19).replace(/[T:]/g, "_");
+        return `${prefix}_${timestamp}.csv`;
+      }
+
+      /**
+       * CSVダウンロード
+       */
+      function downloadCSV(csvContent, filename) {
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      /**
+       * HTMLエスケープ
+       */
+      function escapeHtml(unsafe) {
+        return (unsafe || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      /**
+       * UI状態管理関数
+       */
+      function showLoading(show) {
+        loading.classList.toggle("show", show);
+        extractBtn.disabled = show;
+        if (show) {
+          noData.style.display = "none";
+        }
+      }
+
+      function showControls(show) {
+        controls.classList.toggle("show", show);
+        if (!show) {
+          noData.style.display = imageData.length === 0 ? "block" : "none";
+        } else {
+          noData.style.display = "none";
+        }
+      }
+
+      function showError(message) {
+        showMessage(message, "error");
+      }
+
+      function showSuccess(message) {
+        showMessage(message, "success");
+      }
+
+      function showWarning(message) {
+        showMessage(message, "warning");
+      }
+
+      function showMessage(message, type) {
+        const messageEl = document.createElement("div");
+        messageEl.className = `${type}-message`;
+        messageEl.textContent = message;
+
+        const container = document.querySelector(".container");
+        const urlSection = document.querySelector(".url-section");
+        container.insertBefore(messageEl, urlSection.nextSibling);
+
+        setTimeout(() => messageEl.remove(), 5000);
+      }
+    </script>
+  </body>
+</html>
