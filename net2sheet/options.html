@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Net2Sheet 設定</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        color: #333;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .section {
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+      }
+
+      .section h2 {
+        color: #555;
+        margin-top: 0;
+        margin-bottom: 15px;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: #333;
+      }
+
+      input[type="text"],
+      input[type="password"],
+      input[type="url"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-sizing: border-box;
+        font-size: 14px;
+      }
+
+      input[type="text"]:focus,
+      input[type="password"]:focus,
+      input[type="url"]:focus {
+        outline: none;
+        border-color: #007cba;
+        box-shadow: 0 0 5px rgba(0, 124, 186, 0.3);
+      }
+
+      button {
+        background-color: #007cba;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        margin-right: 10px;
+      }
+
+      button:hover {
+        background-color: #005a8b;
+      }
+
+      button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+
+      .status {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        display: none;
+      }
+
+      .status.success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .status.error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      .status.info {
+        background-color: #cce7ff;
+        color: #004085;
+        border: 1px solid #b3d9ff;
+      }
+
+      .auth-status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .auth-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: #dc3545;
+      }
+
+      .auth-indicator.authenticated {
+        background-color: #28a745;
+      }
+
+      .small-text {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+      }
+
+      .test-section {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Net2Sheet 設定</h1>
+
+      <!-- Backend URL Configuration -->
+      <div class="section">
+        <h2>🔧 バックエンド設定</h2>
+        <div class="form-group">
+          <label for="backendUrl">Cloud Run サービス URL:</label>
+          <input
+            type="url"
+            id="backendUrl"
+            placeholder="https://your-service-xxx-uc.a.run.app"
+          />
+          <div class="small-text">
+            Cloud
+            Runにデプロイしたnet2sheet-uploadサービスのURLを入力してください
+          </div>
+        </div>
+        <button id="saveBackendUrl">URL保存</button>
+        <div id="backendStatus" class="status"></div>
+      </div>
+
+      <!-- Authentication -->
+      <div class="section">
+        <h2>🔐 認証</h2>
+        <div class="auth-status">
+          <div id="authIndicator" class="auth-indicator"></div>
+          <span id="authText">未認証</span>
+        </div>
+
+        <div id="loginForm">
+          <div class="form-group">
+            <label for="username">ユーザー名:</label>
+            <input type="text" id="username" value="demo" />
+            <div class="small-text">デモ用: demo</div>
+          </div>
+          <div class="form-group">
+            <label for="password">パスワード:</label>
+            <input type="password" id="password" value="net2sheet2025" />
+            <div class="small-text">デモ用: net2sheet2025</div>
+          </div>
+          <button id="loginBtn">ログイン</button>
+        </div>
+
+        <div id="logoutSection" style="display: none">
+          <button id="logoutBtn">ログアウト</button>
+        </div>
+
+        <div id="authStatus" class="status"></div>
+      </div>
+
+      <!-- Legacy GAS Support -->
+      <div class="section">
+        <h2>📊 従来のGAS連携（オプション）</h2>
+        <div class="form-group">
+          <label for="gasUrl">Google Apps Script WebApp URL:</label>
+          <input
+            type="url"
+            id="gasUrl"
+            placeholder="https://script.google.com/macros/s/.../exec"
+          />
+          <div class="small-text">
+            従来のGASによるスプレッドシート連携用（Cloud Run使用時は不要）
+          </div>
+        </div>
+        <button id="saveGasUrl">GAS URL保存</button>
+        <div id="gasStatus" class="status"></div>
+
+        <div class="test-section">
+          <button id="testGas">GAS接続テスト</button>
+          <div id="testResult" class="status"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="options.js"></script>
+  </body>
+</html>

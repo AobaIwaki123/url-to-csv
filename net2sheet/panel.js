@@ -41,7 +41,7 @@ const csvRow = (row) => row.map(csvEscape).join(",");
  * @returns {string} CSV形式の文字列
  */
 const generateCSV = (imageRows, options = {}) => {
-  const { headers = ["ファイル名", "URL"], includeHeaders = true } = options;
+  const { headers = ["name", "url"], includeHeaders = true } = options;
 
   const rows = [];
 
@@ -79,13 +79,43 @@ const updateView = () => {
   }
 };
 
-// 設定の保存/復元
+// 設定の保存/復元（レガシーGAS用）
 chrome.storage.local.get(["gasUrl"], ({ gasUrl }) => {
   $("gasUrl").value = gasUrl || "";
 });
 $("save").onclick = () => {
   chrome.storage.local.set({ gasUrl: $("gasUrl").value.trim() });
+  alert("GAS URL保存完了");
 };
+
+// 認証状態表示の更新
+const updateAuthStatus = async () => {
+  try {
+    const response = await chrome.runtime.sendMessage({
+      type: "GET_AUTH_STATUS",
+    });
+    const authElement = $("authStatus");
+
+    if (response.ok && response.authenticated) {
+      authElement.textContent = "認証済み";
+      authElement.style.color = "green";
+    } else {
+      authElement.textContent = "未認証";
+      authElement.style.color = "red";
+    }
+  } catch (e) {
+    $("authStatus").textContent = "認証状態不明";
+    $("authStatus").style.color = "orange";
+  }
+};
+
+// 設定画面を開く
+$("openSettings").onclick = () => {
+  chrome.runtime.openOptionsPage();
+};
+
+// 初期化時に認証状態チェック
+document.addEventListener("DOMContentLoaded", updateAuthStatus);
 
 // CSVダウンロード
 $("exportCsv").onclick = () => {
@@ -119,8 +149,46 @@ $("exportCsv").onclick = () => {
   }
 };
 
-// スプレッドシートへ送信（GAS）
+// Cloud Run経由でスプレッドシートへ送信（JWT認証）
 $("send").onclick = async () => {
+  if (rows.length === 0) {
+    alert("送信するデータがありません");
+    return;
+  }
+
+  try {
+    // 認証状態確認
+    const authStatus = await chrome.runtime.sendMessage({
+      type: "GET_AUTH_STATUS",
+    });
+    if (!authStatus.ok || !authStatus.authenticated) {
+      alert("先に設定画面でログインしてください");
+      return;
+    }
+
+    // CSV生成
+    const csvData = generateCSV(rows);
+
+    // Cloud Run service経由でアップロード
+    const response = await chrome.runtime.sendMessage({
+      type: "UPLOAD_CSV",
+      csvData,
+    });
+
+    if (response.ok) {
+      alert(
+        `アップロード成功！\n件数: ${rows.length}件\nスプレッドシートに追記されました`
+      );
+    } else {
+      alert(`アップロード失敗: ${response.message || response.error}`);
+    }
+  } catch (e) {
+    alert(`送信エラー: ${e.message || e}`);
+  }
+};
+
+// 従来のGAS送信（レガシーサポート）
+$("sendGas").onclick = async () => {
   const gasUrl = $("gasUrl").value.trim();
   if (!gasUrl) {
     alert("GASのWebApp URLを設定してください");
@@ -134,13 +202,12 @@ $("send").onclick = async () => {
     const res = await fetch(gasUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      // 必要に応じて credentials: "include" も検討
       body: JSON.stringify({ rows }),
     });
     const data = await res.json();
-    alert(`送信結果: ${JSON.stringify(data)}`);
+    alert(`GAS送信結果: ${JSON.stringify(data)}`);
   } catch (e) {
-    alert(`送信エラー: ${e}`);
+    alert(`GAS送信エラー: ${e}`);
   }
 };
 
