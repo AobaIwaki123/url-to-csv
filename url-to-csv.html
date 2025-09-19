@@ -388,11 +388,20 @@
             <label for="includeDataUrls">Data URLsも含める</label>
           </div>
           <div class="option-group">
-            <input type="checkbox" id="includeSvg" class="checkbox" checked />
+            <input type="checkbox" id="includeSvg" class="checkbox" />
             <label for="includeSvg">SVG画像も含める</label>
           </div>
           <div class="option-group">
-            <input type="checkbox" id="includeBackground" class="checkbox" />
+            <input type="checkbox" id="includeGif" class="checkbox" />
+            <label for="includeGif">GIF画像も含める</label>
+          </div>
+          <div class="option-group">
+            <input
+              type="checkbox"
+              id="includeBackground"
+              class="checkbox"
+              checked
+            />
             <label for="includeBackground">背景画像も含める</label>
           </div>
         </div>
@@ -672,13 +681,8 @@
         if (!src) return false;
 
         // Data URLs
-        if (src.startsWith("data:")) {
-          return includeDataUrls.checked;
-        }
-
-        // 相対URL
-        if (!src.startsWith("http")) {
-          return true;
+        if (!includeDataUrls.checked && src.startsWith("data:")) {
+          return false;
         }
 
         // 外部ドメイン
@@ -694,18 +698,23 @@
           }
         }
 
-        // SVGファイル
         const lowerSrc = src.toLowerCase();
-        if (lowerSrc.includes(".svg") || lowerSrc.includes("svg")) {
-          return includeSvg.checked;
+
+        // SVGファイル
+        if (includeSvg.checked && lowerSrc.includes("svg")) {
+          return false;
         }
 
-        // 一般的な画像形式をチェック
+        // GIFファイル
+        if (includeGif.checked && lowerSrc.includes("gif")) {
+          return false;
+        }
+
+        // 一般的な画像形式をチェック（SVG以外）
         const imageExtensions = [
           ".jpg",
           ".jpeg",
           ".png",
-          ".gif",
           ".webp",
           ".bmp",
           ".ico",
