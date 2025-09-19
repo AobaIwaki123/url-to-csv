@@ -1,22 +1,28 @@
-# Net2Sheet - 画像URLスクレイパー
+# 画像URLスクレイパー
+
+![URL to CSV Toolkit](https://aobaiwaki123.github.io/url-to-csv/url-to-csv.png "URL to CSV Toolkit")
 
 ## 📋 概要
 
-1. Chrome Extension: Chrome DevToolsで画像リクエストを収集し、CSV形式でエクスポートするChrome拡張機能
-2. [CSV Checker](https://aobaiwaki123.github.io/url-to-csv/csv-checker.html): 取得したCSVファイルの内容を視覚的に確認・編集できるWebツール
-3. [URL to CSV](https://aobaiwaki123.github.io/url-to-csv/url-to-csv.html): 画像URLをCSV形式でエクスポートするWebツール (Chrome 拡張機能とCSV Checkerの機能を統合したアプリケーション)
+画像URL収集のための**包括的なツールキット**。3つの補完的なツールで様々な画像抽出ニーズに対応します。
 
-## Net2Sheet
+### 🔧 3つのツール構成
+
+1. **Net2Sheet** (Chrome拡張機能): DevToolsを用いたリアルタイムネットワーク監視による画像収集機能を持つChrome拡張機能
+2. **[CSV Checker](https://aobaiwaki123.github.io/url-to-csv/csv-checker.html)**: CSVファイルの視覚的確認・編集ツール
+3. **[URL to CSV](https://aobaiwaki123.github.io/url-to-csv/url-to-csv.html)**: Web上でウェブサイトのURLから画像URLを抽出するツール
+
+## Net2Sheet (Chrome拡張機能)
 
 Net2SheetはWeb開発者やコンテンツ管理者向けの拡張機能で、ブラウザのネットワーク通信を監視して画像リソースの情報を効率的に収集・分析できます。
 
 ### ✨ 主な機能
 
 - 📁 **多様な画像形式対応**: PNG, JPEG, GIF, WebP, SVG, AVIF, BMP, ICO
-- 📊 **CSV出力**: 収集したデータをCSV形式でダウンロード
+- 📊 **CSV出力**: 収集したデータを重複排除してCSV形式でダウンロード
 - 🎯 **ユーザーフレンドリー**: 直感的なDevToolsパネルUI
 
-## 🚀 インストール方法
+## 🚀 Chrome拡張機能のインストール方法
 
 ### 1. リポジトリのクローン
 ```bash
@@ -93,12 +99,6 @@ const csv = generateCSV(rows, {
   includeHeaders: true                    // ヘッダー行を含める
 });
 
-// 英語ヘッダーの例
-const csvEnglish = generateCSV(rows, {
-  headers: ["Filename", "Request URL"],
-  includeHeaders: true
-});
-
 // ヘッダーなしの例
 const csvNoHeader = generateCSV(rows, {
   includeHeaders: false
@@ -156,9 +156,35 @@ net2sheet/
 | `Blob API` | CSVファイル生成 |
 | `URL.createObjectURL` | ダウンロード処理 |
 
+## 🌐 URL to CSV (Web画像抽出ツール)
+
+ブラウザ拡張機能を使わずにWebページから画像URLを直接抽出できる**スタンドアロンWebアプリケーション**です。
+
+### 主な機能
+
+- 🔗 **URLのみから画像を抽出**: 指定したWebページから画像を自動検出・抽出
+- 💾 **CSV出力**: Net2Sheet形式と完全互換のCSVファイル生成
+
+### 使用方法
+
+1. **[URL to CSV](https://aobaiwaki123.github.io/url-to-csv/url-to-csv.html)** をブラウザで開く
+2. **抽出方法を選択**:
+   - URLのみから抽出
+3. **画像抽出実行**: 該当する抽出ボタンをクリック
+4. **結果確認**: 抽出された画像一覧をプレビュー
+5. **CSV出力**: 「CSVダウンロード」ボタンでファイル保存
+
+### 対応環境
+
+- **ブラウザ**: Chrome, Firefox, Safari, Edge (ES6対応必須)
+- **CORS制限**: 一部サイトは直接アクセス不可（HTML手動入力で対応）
+- **認証**: パブリックページのみ対応（ログイン不要なページ）
+
+---
+
 ## 🔍 CSV Image Checker
 
-Net2Sheetで生成されたCSVファイルの内容を視覚的に確認・編集できるWebツールです。
+Net2SheetやURL to CSVで生成されたCSVファイルの内容を視覚的に確認・編集できるWebツールです。
 
 ### 概要
 
@@ -209,4 +235,60 @@ Net2Sheet拡張機能が出力する以下の形式に対応：
 
 ---
 
-**Net2Sheet** - Chromeの開発者向けネットワーク監視・画像収集ツール
+## 🔄 ツール間連携・統合ワークフロー
+
+### CSV形式互換性
+
+全ツールで統一されたCSVフォーマットを採用：
+
+```csv
+"ファイル名","URL"
+"image1.jpg","https://example.com/images/image1.jpg"
+"logo.png","https://cdn.example.com/assets/logo.png"
+```
+
+**フォーマット仕様:**
+- UTF-8 エンコーディング（BOM付き）
+- RFC 4180準拠のクォート処理
+- 日本語ヘッダー標準、英語ヘッダー対応
+- Excel・Googleスプレッドシート対応
+
+---
+
+## 🛠️ 開発者向け情報
+
+### プロジェクト構成
+
+```
+url-to-csv/
+├─ README.md                    # プロジェクト説明書（このファイル）
+├─ header-utils.js              # 共有ユーティリティ関数
+├─ csv-checker.html             # CSV画像チェッカー
+├─ url-to-csv.html              # URL画像抽出ツール
+└─ net2sheet/                   # Chrome拡張機能
+   ├─ manifest.json            # 拡張機能設定
+   ├─ panel.js                 # メインロジック
+   └─ (その他拡張機能ファイル)
+```
+
+### 共通技術仕様
+
+- **JavaScript**: ES6+ (async/await, Set, Map, arrow functions)
+- **API**: Fetch API, DOM Parser, Blob API
+- **UI**: Responsive design, Japanese-first interface
+- **互換性**: Chrome, Firefox, Safari, Edge
+
+### 拡張・カスタマイズ
+
+各ツールは独立したファイルとして動作するため、個別のカスタマイズが可能です：
+
+- **画像形式追加**: `IMAGE_EXTS` セットに新しい拡張子を追加
+- **CSVフォーマット変更**: `generateCSV` 関数のオプション調整
+- **UI言語変更**: HTML内のテキストを多言語化
+- **新機能追加**: 既存のユーティリティ関数を活用
+
+---
+
+**画像URLスクレイパー** - 包括的な画像URL収集・管理ツールキット
+
+*Web開発者、コンテンツ管理者、デジタルアセット担当者のための統合ソリューション*
