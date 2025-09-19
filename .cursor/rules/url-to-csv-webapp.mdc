@@ -1,0 +1,375 @@
+---
+description: URL to CSV web application development and maintenance guidelines
+globs: url-to-csv.html
+---
+
+# URL to CSV Web Application Rules
+
+The [url-to-csv.html](mdc:url-to-csv.html) is a **standalone web application** for extracting image URLs from web pages and converting them to CSV format without requiring a browser extension.
+
+## Application Overview
+- **Purpose**: Web-based image URL extraction from HTML sources or manual input
+- **Architecture**: Single-file HTML application with embedded CSS, JavaScript, and utility dependencies
+- **Target Users**: Content managers, SEO analysts, and users who prefer web tools over extensions
+
+## Key Features Implementation
+
+### 1. URL Input Methods
+```javascript
+// Single URL extraction
+const extractFromSingleUrl = async (url) => {
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      mode: 'cors',
+      credentials: 'omit'
+    });
+    const html = await response.text();
+    return parseImagesFromHTML(html, url);
+  } catch (error) {
+    throw new Error(`URL読み込みエラー: ${error.message}`);
+  }
+};
+
+// Bulk URL processing
+const processBulkUrls = async (urlList) => {
+  const results = [];
+  for (const url of urlList) {
+    try {
+      const images = await extractFromSingleUrl(url);
+      results.push(...images);
+    } catch (error) {
+      console.warn(`URL処理失敗: ${url} - ${error.message}`);
+    }
+  }
+  return results;
+};
+```
+
+### 2. HTML Parsing for Image Extraction
+```javascript
+// Extract images from HTML using DOM parsing
+const parseImagesFromHTML = (htmlContent, baseUrl) => {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlContent, 'text/html');
+  const images = [];
+  
+  // Extract from img tags
+  doc.querySelectorAll('img[src]').forEach(img => {
+    const src = img.getAttribute('src');
+    if (src) {
+      const absoluteUrl = new URL(src, baseUrl).href;
+      if (isImageUrl(absoluteUrl)) {
+        images.push([extractFilename(absoluteUrl), absoluteUrl]);
+      }
+    }
+  });
+  
+  // Extract from CSS background-image properties
+  doc.querySelectorAll('[style*="background-image"]').forEach(el => {
+    const style = el.getAttribute('style');
+    const bgMatch = style.match(/background-image:\s*url\(['"]?([^'")]+)['"]?\)/);
+    if (bgMatch) {
+      const absoluteUrl = new URL(bgMatch[1], baseUrl).href;
+      if (isImageUrl(absoluteUrl)) {
+        images.push([extractFilename(absoluteUrl), absoluteUrl]);
+      }
+    }
+  });
+  
+  return images;
+};
+```
+
+### 3. Input Interface Design
+```html
+<!-- URL input methods -->
+<div class="input-section">
+  <label for="singleUrl">単一URL抽出:</label>
+  <input type="url" id="singleUrl" placeholder="https://example.com/page">
+  <button onclick="extractFromSingle()">🔍 抽出</button>
+</div>
+
+<div class="input-section">
+  <label for="bulkUrls">一括URL抽出:</label>
+  <textarea id="bulkUrls" rows="5" placeholder="https://example.com/page1
+https://example.com/page2
+https://example.com/page3"></textarea>
+  <button onclick="extractFromBulk()">📋 一括抽出</button>
+</div>
+
+<div class="input-section">
+  <label for="htmlInput">HTML直接入力:</label>
+  <textarea id="htmlInput" rows="8" placeholder="HTMLコンテンツを貼り付けてください"></textarea>
+  <input type="url" id="baseUrl" placeholder="ベースURL (例: https://example.com)">
+  <button onclick="extractFromHTML()">🔍 HTML解析</button>
+</div>
+```
+
+## UI/UX Design Patterns
+
+### Responsive Layout System
+```css
+/* Mobile-first responsive design */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+@media (max-width: 768px) {
+  .input-section {
+    flex-direction: column;
+  }
+  
+  .button-group {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
+/* Grid layout for results display */
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+```
+
+### Japanese-First Interface
+```css
+/* Typography for Japanese text */
+body {
+  font-family: 'Hiragino Kaku Gothic ProN', 'ヒラギノ角ゴ ProN W3', 
+               'Yu Gothic Medium', 'YuGothic', 'Meiryo', sans-serif;
+  line-height: 1.6;
+}
+
+/* Button styling with emoji icons */
+.btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+```
+
+## Data Processing Standards
+
+### Image URL Validation
+```javascript
+// Consistent image detection with Net2Sheet
+const IMAGE_EXTENSIONS = new Set([
+  '.png', '.jpg', '.jpeg', '.gif', '.webp', 
+  '.svg', '.avif', '.bmp', '.ico'
+]);
+
+const isImageUrl = (url) => {
+  try {
+    const urlObj = new URL(url);
+    const pathname = urlObj.pathname.toLowerCase();
+    const ext = pathname.substring(pathname.lastIndexOf('.'));
+    return IMAGE_EXTENSIONS.has(ext);
+  } catch {
+    return false;
+  }
+};
+
+// Filename extraction
+const extractFilename = (url) => {
+  try {
+    const pathname = new URL(url).pathname;
+    return decodeURIComponent(pathname.split('/').pop()) || 'unknown';
+  } catch {
+    return 'invalid-url';
+  }
+};
+```
+
+### Data Deduplication
+```javascript
+// Remove duplicate URLs while preserving order
+const deduplicateImages = (imageArray) => {
+  const seen = new Set();
+  return imageArray.filter(([filename, url]) => {
+    if (seen.has(url)) {
+      return false;
+    }
+    seen.add(url);
+    return true;
+  });
+};
+
+// Statistical summary
+const generateStats = (images) => {
+  const domains = new Set();
+  const extensions = new Map();
+  
+  images.forEach(([filename, url]) => {
+    try {
+      const urlObj = new URL(url);
+      domains.add(urlObj.hostname);
+      
+      const ext = filename.substring(filename.lastIndexOf('.')).toLowerCase();
+      extensions.set(ext, (extensions.get(ext) || 0) + 1);
+    } catch {
+      // Skip invalid URLs
+    }
+  });
+  
+  return {
+    totalImages: images.length,
+    uniqueDomains: domains.size,
+    extensionBreakdown: Object.fromEntries(extensions)
+  };
+};
+```
+
+## Error Handling Strategy
+
+### Network Request Handling
+```javascript
+// CORS-aware request handling
+const fetchWithFallback = async (url) => {
+  try {
+    // Try direct fetch first
+    const response = await fetch(url, {
+      method: 'GET',
+      mode: 'cors',
+      credentials: 'omit',
+      headers: {
+        'User-Agent': 'URL-to-CSV Tool/1.0'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    return await response.text();
+  } catch (corsError) {
+    // Fallback: ask user to paste HTML manually
+    throw new Error(`CORS制限のため直接アクセスできません。HTMLを手動で貼り付けてください。`);
+  }
+};
+```
+
+### User Feedback System
+```javascript
+// Toast notification system
+const showNotification = (message, type = 'info') => {
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  
+  document.body.appendChild(toast);
+  
+  // Auto-remove after 5 seconds
+  setTimeout(() => {
+    toast.remove();
+  }, 5000);
+};
+
+// Progress indicator for bulk operations
+const updateProgress = (current, total, operation) => {
+  const percentage = Math.round((current / total) * 100);
+  const progressBar = document.getElementById('progress');
+  progressBar.style.width = `${percentage}%`;
+  progressBar.textContent = `${operation}: ${current}/${total} (${percentage}%)`;
+};
+```
+
+## CSV Export Integration
+
+### Format Consistency
+```javascript
+// Use shared CSV generation function (compatible with Net2Sheet)
+const generateCSV = (imageData, options = {}) => {
+  const { headers = ["ファイル名", "URL"], includeHeaders = true } = options;
+  const csvEscape = (value) => `"${(value ?? "").replace(/"/g, '""')}"`;
+  const csvRow = (row) => row.map(csvEscape).join(",");
+  
+  const rows = [];
+  if (includeHeaders) rows.push(csvRow(headers));
+  imageData.forEach(row => rows.push(csvRow(row)));
+  
+  return rows.join("\n");
+};
+
+// Download implementation
+const downloadCSV = (csvContent, filename) => {
+  const BOM = '\uFEFF'; // UTF-8 BOM for Excel compatibility
+  const blob = new Blob([BOM + csvContent], { 
+    type: 'text/csv;charset=utf-8' 
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+```
+
+## Performance Optimization
+
+### Async Processing for Large Datasets
+```javascript
+// Process URLs in batches to avoid blocking UI
+const processBulkUrlsAsync = async (urlList, batchSize = 5) => {
+  const results = [];
+  
+  for (let i = 0; i < urlList.length; i += batchSize) {
+    const batch = urlList.slice(i, i + batchSize);
+    const batchPromises = batch.map(url => extractFromSingleUrl(url));
+    
+    try {
+      const batchResults = await Promise.allSettled(batchPromises);
+      batchResults.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          results.push(...result.value);
+        } else {
+          console.warn(`URL処理失敗: ${batch[index]} - ${result.reason}`);
+        }
+      });
+      
+      // Update progress
+      updateProgress(Math.min(i + batchSize, urlList.length), urlList.length, "URL処理中");
+      
+      // Brief pause to keep UI responsive
+      await new Promise(resolve => setTimeout(resolve, 100));
+    } catch (error) {
+      console.error("Batch processing error:", error);
+    }
+  }
+  
+  return results;
+};
+```
+
+## Integration with Ecosystem
+
+### Cross-Tool Compatibility
+- **CSV Format**: Uses identical format to Net2Sheet extension
+- **Image Detection**: Consistent extension checking logic
+- **Export Workflow**: Generated CSV works seamlessly with CSV Checker tool
+- **Header Utilities**: Can leverage [header-utils.js](mdc:header-utils.js) for HTTP processing
+
+### Development Guidelines
+1. **Single File Architecture**: Keep all dependencies embedded for easy deployment
+2. **Progressive Enhancement**: Ensure basic functionality works without JavaScript
+3. **Mobile Responsiveness**: Optimize for tablet and phone usage
+4. **Accessibility**: Full keyboard navigation and screen reader support
+5. **Performance**: Lazy loading and efficient DOM manipulation
+
+Refer to [README.md](mdc:README.md) for usage instructions and [csv-checker.html](mdc:csv-checker.html) integration workflow.
