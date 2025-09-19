@@ -1,0 +1,209 @@
+---
+alwaysApply: true
+description: Serena MCP memory management patterns for project knowledge retention
+---
+
+# Serena MCP メモリ管理パターン
+
+プロジェクトの知識を効率的に保持・活用するためのSerena MCPメモリ管理ガイドです。
+
+## メモリ分類体系
+
+### プロジェクト構造メモリ
+```javascript
+// アーキテクチャ情報
+mcp_serena_write_memory("project-architecture", `
+# プロジェクトアーキテクチャ
+- 3つのツール: Net2Sheet, CSV Checker, URL to CSV
+- 共通CSV形式: "ファイル名","URL"
+- 画像拡張子: .png, .jpg, .jpeg, .gif, .webp, .svg, .avif, .bmp, .ico
+- 日本語UI統一
+`)
+
+// ファイル構造
+mcp_serena_write_memory("file-structure", `
+# ファイル構造
+- net2sheet/: Chrome拡張機能
+- csv-checker.html: CSV画像チェッカー
+- url-to-csv.html: URL画像スクレイパー
+- header-utils.js: 共通ユーティリティ
+`)
+
+// 開発ワークフロー
+mcp_serena_write_memory("development-workflow", `
+# 開発ワークフロー
+1. データ収集: Net2Sheet or URL to CSV
+2. データ確認: CSV Checker
+3. データ精製: 編集・除外
+4. 最終出力: 精製されたCSV
+`)
+```
+
+### 技術仕様メモリ
+```javascript
+// CSV形式仕様
+mcp_serena_write_memory("csv-format-spec", `
+# CSV形式仕様
+- ヘッダー: "ファイル名","URL"
+- エンコーディング: UTF-8
+- 区切り文字: カンマ
+- 引用符: ダブルクォート
+- 改行: LF
+`)
+
+// 画像検出ロジック
+mcp_serena_write_memory("image-detection-logic", `
+# 画像検出ロジック
+const IMAGE_EXTS = new Set([
+  ".png", ".jpg", ".jpeg", ".gif", ".webp", 
+  ".svg", ".avif", ".bmp", ".ico"
+]);
+
+function isImageURL(url) {
+  const ext = url.split('.').pop().toLowerCase();
+  return IMAGE_EXTS.has('.' + ext);
+}
+`)
+
+// エラーハンドリングパターン
+mcp_serena_write_memory("error-handling-patterns", `
+# エラーハンドリングパターン
+- ネットワークエラー: fetch().catch()
+- パースエラー: try-catch
+- ユーザーエラー: 日本語メッセージ
+- ログ出力: console.error()
+`)
+```
+
+### 実装パターンメモリ
+```javascript
+// 共通実装パターン
+mcp_serena_write_memory("common-patterns", `
+# 共通実装パターン
+- CSV生成: generateCSV(data)
+- 画像フィルタリング: filterImages(urls)
+- ファイル名生成: generateFilename(url)
+- ダウンロード処理: downloadCSV(csvData)
+`)
+
+// UI要素パターン
+mcp_serena_write_memory("ui-patterns", `
+# UI要素パターン
+- ボタン: <button onclick="functionName()">📊 機能名</button>
+- 入力: <input type="text" placeholder="説明">
+- 結果表示: <div id="result"></div>
+- ローディング: <div class="loading">⏳ 処理中...</div>
+`)
+
+// イベント処理パターン
+mcp_serena_write_memory("event-patterns", `
+# イベント処理パターン
+- クリック: addEventListener('click', handler)
+- ファイル選択: addEventListener('change', handler)
+- フォーム送信: addEventListener('submit', handler)
+- ページ読み込み: addEventListener('load', handler)
+`)
+```
+
+## メモリ活用パターン
+
+### 開発開始時
+```javascript
+// プロジェクト情報を読み込み
+mcp_serena_read_memory("project-architecture")
+mcp_serena_read_memory("file-structure")
+mcp_serena_read_memory("development-workflow")
+```
+
+### 実装中
+```javascript
+// 技術仕様を確認
+mcp_serena_read_memory("csv-format-spec")
+mcp_serena_read_memory("image-detection-logic")
+mcp_serena_read_memory("error-handling-patterns")
+```
+
+### デバッグ時
+```javascript
+// 実装パターンを確認
+mcp_serena_read_memory("common-patterns")
+mcp_serena_read_memory("ui-patterns")
+mcp_serena_read_memory("event-patterns")
+```
+
+## メモリ更新・管理
+
+### 定期的な更新
+```javascript
+// プロジェクト情報の更新
+mcp_serena_write_memory("project-architecture", "更新されたアーキテクチャ情報")
+
+// 古いメモリの削除
+mcp_serena_delete_memory("obsolete-memory-name")
+```
+
+### メモリ一覧管理
+```javascript
+// メモリ一覧確認
+mcp_serena_list_memories()
+
+// 特定のメモリ確認
+mcp_serena_read_memory("memory-name")
+```
+
+## プロジェクト固有メモリ
+
+### Net2Sheet拡張機能
+```javascript
+mcp_serena_write_memory("net2sheet-specs", `
+# Net2Sheet拡張機能仕様
+- Manifest V3対応
+- DevToolsパネル統合
+- ネットワーク監視機能
+- Google Sheets連携
+- リアルタイムCSV出力
+`)
+```
+
+### CSV Checker
+```javascript
+mcp_serena_write_memory("csv-checker-specs", `
+# CSV Checker仕様
+- 画像プレビュー機能
+- インライン編集
+- 除外機能
+- 修正CSV出力
+- ドラッグ&ドロップ対応
+`)
+```
+
+### URL to CSV
+```javascript
+mcp_serena_write_memory("url-to-csv-specs", `
+# URL to CSV仕様
+- HTMLパース機能
+- バルクURL処理
+- 手動URL入力
+- リアルタイムプレビュー
+- 一括ダウンロード
+`)
+```
+
+## メモリ活用チェックリスト
+
+### 開発開始時
+- [ ] プロジェクト構造メモリを読み込み
+- [ ] 技術仕様メモリを確認
+- [ ] 実装パターンメモリを参照
+
+### 実装中
+- [ ] 関連メモリを随時参照
+- [ ] 新しいパターンをメモリに追加
+- [ ] 古い情報を更新
+
+### 完了時
+- [ ] 実装内容をメモリに記録
+- [ ] 学んだパターンを保存
+- [ ] 不要なメモリを削除
+
+このメモリ管理パターンにより、プロジェクトの知識を効率的に保持・活用できます。

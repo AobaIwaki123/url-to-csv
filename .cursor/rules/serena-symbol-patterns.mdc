@@ -1,0 +1,175 @@
+---
+globs: *.js,*.html
+description: Serena MCP symbol-based development patterns for JavaScript and HTML files
+---
+
+# Serena MCP シンボルベース開発パターン
+
+JavaScript/HTMLファイルでのSerena MCPを活用した効率的な開発パターンです。
+
+## シンボル検索の最適化
+
+### 関数検索パターン
+```javascript
+// 基本関数検索
+mcp_serena_find_symbol("functionName", "relative/path/to/file.js")
+
+// クラス内メソッド検索
+mcp_serena_find_symbol("ClassName/methodName", "relative/path/to/file.js")
+
+// 部分一致検索
+mcp_serena_find_symbol("functionName", "relative/path/to/file.js", {
+  substring_matching: true
+})
+
+// 特定の種類のみ検索
+mcp_serena_find_symbol("functionName", "relative/path/to/file.js", {
+  include_kinds: [12] // 12 = function
+})
+```
+
+### 参照検索パターン
+```javascript
+// 関数の使用箇所検索
+mcp_serena_find_referencing_symbols("functionName", "relative/path/to/file.js")
+
+// 特定の種類の参照のみ
+mcp_serena_find_referencing_symbols("functionName", "relative/path/to/file.js", {
+  include_kinds: [12, 6] // function, method
+})
+```
+
+## 画像URLスクレイパー特化パターン
+
+### 主要関数の検索
+```javascript
+// CSV関連関数
+mcp_serena_find_symbol("generateCSV", "")
+mcp_serena_find_symbol("parseCSV", "")
+mcp_serena_find_symbol("exportCSV", "")
+
+// 画像処理関数
+mcp_serena_find_symbol("extractImages", "")
+mcp_serena_find_symbol("filterImages", "")
+mcp_serena_find_symbol("validateImageURL", "")
+
+// ネットワーク監視関数
+mcp_serena_find_symbol("monitorNetwork", "")
+mcp_serena_find_symbol("captureRequest", "")
+```
+
+### 共通パターン検索
+```javascript
+// 画像拡張子チェック
+mcp_serena_search_for_pattern("IMAGE_EXTS", "")
+
+// CSV形式定義
+mcp_serena_search_for_pattern("ファイル名.*URL", "")
+
+// エラーハンドリング
+mcp_serena_search_for_pattern("catch.*error", "")
+
+// イベントリスナー
+mcp_serena_search_for_pattern("addEventListener", "")
+```
+
+## 効率的な編集パターン
+
+### 関数置き換え
+```javascript
+// 完全な関数置き換え
+mcp_serena_replace_symbol_body("functionName", "relative/path", `
+function functionName(param1, param2) {
+  // 新しい実装
+  return result;
+}
+`)
+```
+
+### 関数拡張
+```javascript
+// 関数の前に新しい関数を追加
+mcp_serena_insert_before_symbol("existingFunction", "relative/path", `
+function newHelperFunction() {
+  // ヘルパー関数の実装
+}
+`)
+
+// 関数の後に新しい関数を追加
+mcp_serena_insert_after_symbol("existingFunction", "relative/path", `
+function newUtilityFunction() {
+  // ユーティリティ関数の実装
+}
+`)
+```
+
+## ファイル構造理解パターン
+
+### ファイル概要取得
+```javascript
+// ファイル全体の構造を把握
+mcp_serena_get_symbols_overview("relative/path/to/file.js")
+
+// 特定の深さまで取得
+mcp_serena_get_symbols_overview("relative/path/to/file.js", {
+  depth: 2 // クラス内のメソッドまで
+})
+```
+
+### ディレクトリ構造確認
+```javascript
+// プロジェクト全体の構造
+mcp_serena_list_dir(".", true)
+
+// 特定ディレクトリの内容
+mcp_serena_list_dir("net2sheet", false)
+mcp_serena_list_dir("docs", true)
+```
+
+## デバッグ・分析パターン
+
+### 問題特定
+```javascript
+// エラー関連の検索
+mcp_serena_search_for_pattern("console\.error|throw|Error", "")
+
+// 非同期処理の検索
+mcp_serena_search_for_pattern("async|await|Promise", "")
+
+// イベント処理の検索
+mcp_serena_search_for_pattern("onClick|onLoad|onChange", "")
+```
+
+### パフォーマンス分析
+```javascript
+// ループ処理の検索
+mcp_serena_search_for_pattern("for.*of|forEach|map|filter", "")
+
+// メモリ使用量の検索
+mcp_serena_search_for_pattern("memory|cache|storage", "")
+
+// ネットワーク処理の検索
+mcp_serena_search_for_pattern("fetch|XMLHttpRequest|axios", "")
+```
+
+## 実装チェックリスト
+
+### 新機能実装前
+- [ ] 既存の類似機能を検索
+- [ ] 関連するシンボルを特定
+- [ ] 依存関係を確認
+- [ ] 既存パターンを理解
+
+### 実装中
+- [ ] 段階的にシンボルを検索
+- [ ] 参照箇所を確認
+- [ ] 一貫性を保つ
+- [ ] エラーハンドリングを追加
+
+### 実装後
+- [ ] 全体の整合性を確認
+- [ ] パフォーマンスを検証
+- [ ] ドキュメントを更新
+- [ ] テストケースを追加
+
+このパターンに従うことで、Serena MCPを活用した効率的なJavaScript/HTML開発が可能になります。

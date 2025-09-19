@@ -1,0 +1,240 @@
+---
+alwaysApply: true
+description: Serena MCP performance optimization patterns for efficient development workflows
+---
+
+# Serena MCP パフォーマンス最適化パターン
+
+Serena MCPを効率的に活用するためのパフォーマンス最適化ガイドです。
+
+## 検索最適化パターン
+
+### 効率的な検索順序
+```javascript
+// 1. シンボル検索（最も高速）
+mcp_serena_find_symbol("functionName", "specific/file/path.js")
+
+// 2. 参照検索（中程度の速度）
+mcp_serena_find_referencing_symbols("functionName", "specific/file/path.js")
+
+// 3. パターン検索（最も低速、最後の手段）
+mcp_serena_search_for_pattern("complex_pattern", "specific/directory")
+```
+
+### 検索範囲の限定
+```javascript
+// ファイルパスを指定して検索範囲を限定
+mcp_serena_find_symbol("functionName", "net2sheet/panel.js")
+mcp_serena_search_for_pattern("pattern", "csv-checker.html")
+
+// ディレクトリを指定
+mcp_serena_search_for_pattern("pattern", "net2sheet/")
+mcp_serena_search_for_pattern("pattern", "docs/")
+```
+
+### シンボル種別の絞り込み
+```javascript
+// 関数のみ検索
+mcp_serena_find_symbol("functionName", "", {
+  include_kinds: [12] // 12 = function
+})
+
+// クラスとメソッドのみ検索
+mcp_serena_find_symbol("ClassName", "", {
+  include_kinds: [5, 6] // 5 = class, 6 = method
+})
+
+// 変数と定数のみ検索
+mcp_serena_find_symbol("variableName", "", {
+  include_kinds: [13, 14] // 13 = variable, 14 = constant
+})
+```
+
+## メモリ最適化パターン
+
+### メモリサイズ制限
+```javascript
+// 大きなメモリはサイズ制限を設定
+mcp_serena_write_memory("large-data", "大量のデータ", {
+  max_answer_chars: 10000
+})
+
+// 検索結果もサイズ制限
+mcp_serena_search_for_pattern("pattern", "", {
+  max_answer_chars: 5000
+})
+```
+
+### メモリの効率的な活用
+```javascript
+// 重要な情報のみメモリに保存
+mcp_serena_write_memory("key-patterns", "重要なパターンのみ")
+
+// 一時的な情報はメモリに保存しない
+// 代わりに検索結果を直接使用
+
+// 定期的にメモリを整理
+mcp_serena_list_memories()
+mcp_serena_delete_memory("obsolete-memory")
+```
+
+## 並列処理パターン
+
+### 複数検索の並列実行
+```javascript
+// 複数の検索を同時に実行
+const searches = [
+  mcp_serena_find_symbol("function1", "file1.js"),
+  mcp_serena_find_symbol("function2", "file2.js"),
+  mcp_serena_find_symbol("function3", "file3.js")
+];
+
+// 結果を並列で処理
+Promise.all(searches).then(results => {
+  // 結果を統合して処理
+});
+```
+
+### 段階的な情報収集
+```javascript
+// 1. 概要を取得
+mcp_serena_get_symbols_overview("file.js")
+
+// 2. 詳細を取得
+mcp_serena_find_symbol("specificFunction", "file.js")
+
+// 3. 関連情報を取得
+mcp_serena_find_referencing_symbols("specificFunction", "file.js")
+```
+
+## プロジェクト固有最適化
+
+### 画像URLスクレイパー特化
+```javascript
+// よく使用される関数を優先検索
+const commonFunctions = [
+  "generateCSV",
+  "extractImages", 
+  "filterImages",
+  "isImageURL",
+  "downloadCSV"
+];
+
+// 各関数を効率的に検索
+commonFunctions.forEach(func => {
+  mcp_serena_find_symbol(func, "");
+});
+```
+
+### ファイル構造の最適化
+```javascript
+// プロジェクト構造を理解
+mcp_serena_list_dir(".", false) // ルートディレクトリのみ
+mcp_serena_list_dir("net2sheet", false) // 拡張機能ディレクトリ
+mcp_serena_list_dir("docs", false) // ドキュメントディレクトリ
+```
+
+## 思考ツールの最適化
+
+### 効率的な思考パターン
+```javascript
+// 情報収集後の分析
+mcp_serena_think_about_collected_information()
+
+// タスク進捗の確認
+mcp_serena_think_about_task_adherence()
+
+// 完了判定
+mcp_serena_think_about_whether_you_are_done()
+```
+
+### 思考のタイミング
+```javascript
+// 重要な情報収集後
+if (importantInfoCollected) {
+  mcp_serena_think_about_collected_information();
+}
+
+// タスクの節目
+if (milestoneReached) {
+  mcp_serena_think_about_task_adherence();
+}
+
+// 実装完了時
+if (implementationComplete) {
+  mcp_serena_think_about_whether_you_are_done();
+}
+```
+
+## エラー回避パターン
+
+### よくあるエラーと対策
+```javascript
+// シンボルが見つからない場合
+mcp_serena_find_symbol("functionName", "", {
+  substring_matching: true // 部分一致を有効
+})
+
+// パスエラーの場合
+mcp_serena_list_dir(".", false) // 現在のディレクトリを確認
+mcp_serena_get_current_config() // 設定を確認
+
+// メモリ不足の場合
+mcp_serena_search_for_pattern("pattern", "", {
+  max_answer_chars: 1000 // サイズ制限を設定
+})
+```
+
+### デバッグ情報の取得
+```javascript
+// 現在の設定を確認
+mcp_serena_get_current_config()
+
+// プロジェクト状態を確認
+mcp_serena_check_onboarding_performed()
+
+// 利用可能なツールを確認
+mcp_serena_get_current_config()
+```
+
+## パフォーマンス監視
+
+### 検索効率の監視
+```javascript
+// 検索時間の測定
+const startTime = Date.now();
+mcp_serena_find_symbol("functionName", "");
+const endTime = Date.now();
+console.log(`検索時間: ${endTime - startTime}ms`);
+```
+
+### メモリ使用量の監視
+```javascript
+// メモリ一覧の確認
+mcp_serena_list_memories()
+
+// 不要なメモリの削除
+mcp_serena_delete_memory("unused-memory")
+```
+
+## 最適化チェックリスト
+
+### 検索最適化
+- [ ] シンボル検索を優先使用
+- [ ] 検索範囲を限定
+- [ ] シンボル種別を絞り込み
+- [ ] 並列検索を活用
+
+### メモリ最適化
+- [ ] サイズ制限を設定
+- [ ] 重要な情報のみ保存
+- [ ] 定期的にメモリを整理
+- [ ] 一時的な情報は保存しない
+
+### 思考最適化
+- [ ] 適切なタイミングで思考ツールを使用
+- [ ] 情報収集後に分析
+- [ ] タスク進捗を確認
+- [ ] 完了判定を実行
+
+この最適化パターンにより、Serena MCPを最大限活用した効率的な開発が可能になります。
