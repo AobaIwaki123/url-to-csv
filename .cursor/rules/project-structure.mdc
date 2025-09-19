@@ -13,14 +13,17 @@ This is a **Chrome Extension (Manifest V3)** that collects image requests from D
 
 ## File Structure
 ```
-net2sheet/
-├─ [manifest.json](mdc:net2sheet/manifest.json)           # Chrome extension manifest (MV3)
-├─ [devtools-page.html](mdc:net2sheet/devtools-page.html) # DevTools entry point
-├─ [devtools-page.js](mdc:net2sheet/devtools-page.js)     # Panel registration script
-├─ [panel.html](mdc:net2sheet/panel.html)                 # DevTools panel UI
-├─ [panel.js](mdc:net2sheet/panel.js)                     # Main logic for network monitoring & data export
-├─ [service_worker.js](mdc:net2sheet/service_worker.js)   # Background script (minimal implementation)
-└─ icon*.png                                              # Extension icons (16, 48, 128px)
+url-to-csv/
+├─ [csv-checker.html](mdc:csv-checker.html)               # Standalone CSV image checker tool
+├─ net2sheet/                                             # Chrome extension directory
+│  ├─ [manifest.json](mdc:net2sheet/manifest.json)       # Chrome extension manifest (MV3)
+│  ├─ [devtools-page.html](mdc:net2sheet/devtools-page.html) # DevTools entry point
+│  ├─ [devtools-page.js](mdc:net2sheet/devtools-page.js) # Panel registration script
+│  ├─ [panel.html](mdc:net2sheet/panel.html)             # DevTools panel UI
+│  ├─ [panel.js](mdc:net2sheet/panel.js)                 # Main logic for network monitoring & data export
+│  ├─ [service_worker.js](mdc:net2sheet/service_worker.js) # Background script (minimal implementation)
+│  └─ icon*.png                                          # Extension icons (16, 48, 128px)
+└─ [README.md](mdc:README.md)                             # Project documentation
 ```
 
 ## Key Components
@@ -28,6 +31,7 @@ net2sheet/
 2. **Image Filter**: Identifies image requests by file extension (.png, .jpg, .webp, etc.)
 3. **Data Export**: CSV download and Google Sheets integration via GAS WebApp
 4. **Settings**: Persistent storage for GAS WebApp URL configuration
+5. **CSV Checker Tool**: Standalone HTML tool for reviewing and editing exported CSV files with image preview
 
 ## Development Focus
 - **Real-time data collection** from `chrome.devtools.network.onRequestFinished`
